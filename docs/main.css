@@ -1,0 +1,32 @@
+body {
+    background-color: black;
+    color: #e0e0e0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: large;
+    padding-top: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+nav {
+    margin-top: 0.5rem;
+}
+
+nav > ul > a {
+    text-decoration: none;
+    color: inherit;
+}
+
+nav > ul > a > li {
+    display: inline;
+    padding: 1rem;
+    border-style: solid;
+    border-bottom-style: none;
+    border-width: 0.1rem;
+    border-color: #a0a0a0;
+}
+
+.selected-nav {
+    text-decoration: underline;
+    font-weight: bolder;
+}

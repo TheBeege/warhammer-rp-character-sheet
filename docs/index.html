@@ -2,8 +2,51 @@
 <html>
     <head>
         <title>[WiP] Warhammer Fantasy RP Character Sheet</title>
+        <link rel="stylesheet" href="main.css">
     </head>
     <body>
-        <h1>[WiP] Warhammer Fantasy RP Character Sheet</h1>
+        <header>
+            <h1>[WiP] Warhammer Fantasy RP Character Sheet</h1>
+            <nav>
+                <ul>
+                    <a href="#"><li class="selected-nav">Profile</li></a>
+                    <a href="#"><li>Attributes/Health</li></a>
+                    <a href="#"><li>Skills/Talents</li></a>
+                    <a href="#"><li>Weapons/Armor</li></a>
+                    <a href="#"><li>Gear</li></a>
+                    <a href="#"><li>Magic/Spells</li></a>
+                    <a href="#"><li>Religion/Prayers</li></a>
+                    <a href="#"><li>Background/Personality</li></a>
+                    <a href="#"><li>Campaign Notes</li></a>
+                    <a href="#"><li>XP Log</li></a>
+                </ul>
+            </nav>
+            <hr>
+        </header>
+        <main>
+            <section>
+                <form>
+                    <fieldset>
+                        <legend>Character Overview</legend>
+                        <label for="name">Name:</label><input type="text" id="name" name="character_name" />
+                        <label for="species">Species:</label><input type="text" id="species" name="character_species" />
+                        <label for="gender">Gender:</label><select id="gender" name="character_gender">
+                            <option value="">Choose...</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <label for="age">Age:</label><input type="number" id="age" name="character_age" />
+                        <label for="height">Height:</label><input type="text" id="height" name="character_height" />
+                        <!-- TODO: height string constraints -->
+                        <!-- TODO: switch between imperial and metric -->
+                        <label for="hair">Hair:</label><input type="text" id="hair" name="character_hair" />
+                        <label for="eyes">Eyes:</label><input type="text" id="eyes" name="character_eyes" />
+                        <label for="birthday">Birthday:</label><input type="text" id="birthday" name="character_birthday" />
+                        <label for="birthplace">Nationality/Birthplace:</label><input type="text" id="birthplace" name="character_birthplace" />
+                    </fieldset>
+                </form>
+            </section>
+        </main>
     </body>
 </html>
