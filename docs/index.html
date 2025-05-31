@@ -25,29 +25,200 @@
             <hr>
         </header>
         <main>
-            <section>
-                <form>
-                    <fieldset>
-                        <legend>Character Overview</legend>
-                        <label for="name">Name:</label><input type="text" id="name" name="character_name" />
-                        <label for="species">Species:</label><input type="text" id="species" name="character_species" />
-                        <label for="gender">Gender:</label><select id="gender" name="character_gender">
-                            <option value="">Choose...</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <label for="age">Age:</label><input type="number" id="age" name="character_age" />
-                        <label for="height">Height:</label><input type="text" id="height" name="character_height" />
-                        <!-- TODO: height string constraints -->
-                        <!-- TODO: switch between imperial and metric -->
-                        <label for="hair">Hair:</label><input type="text" id="hair" name="character_hair" />
-                        <label for="eyes">Eyes:</label><input type="text" id="eyes" name="character_eyes" />
-                        <label for="birthday">Birthday:</label><input type="text" id="birthday" name="character_birthday" />
-                        <label for="birthplace">Nationality/Birthplace:</label><input type="text" id="birthplace" name="character_birthplace" />
-                    </fieldset>
-                </form>
-            </section>
+            <div class="section-column">
+                <section>
+                    <h2>Character Overview</h2>
+                    <hr>
+                    <form>
+                        <fieldset>
+                            <legend>Basic Attributes</legend>
+                            <div class="field">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="character_name" />
+                            </div>
+                            <div class="field">
+                                <label for="species">Species</label>
+                                <input type="text" id="species" name="character_species" />
+                            </div>
+                            <div class="field">
+                                <label for="gender">Gender</label><select id="gender" name="character_gender">
+                                    <option value="">Choose...</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Physical Attributes</legend>
+                            <div class="field">
+                                <label for="age">Age</label>
+                                <input type="number" id="age" name="character_age" />
+                            </div>
+                            <div class="field">
+                                <label for="height">Height</label>
+                                <input type="text" id="height" name="character_height" />
+                                <!-- TODO: height string constraints -->
+                                <!-- TODO: switch between imperial and metric -->
+                            </div>
+                            <div class="field">
+                                <label for="hair">Hair</label>
+                                <input type="text" id="hair" name="character_hair" />
+                            </div>
+                            <div class="field">
+                                <label for="eyes">Eyes</label>
+                                <input type="text" id="eyes" name="character_eyes" />
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Origins</legend>
+                            <div class="field">
+                                <label for="birthday">Birthday</label>
+                                <input type="text" id="birthday" name="character_birthday" />
+                            </div>
+                            <div class="field">
+                                <label for="birthplace">Nationality/Birthplace</label>
+                                <input type="text" id="birthplace" name="character_birthplace" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+                <section>
+                    <h2>Psyche</h2>
+                    <hr>
+                    <form>
+                        <fieldset>
+                            <legend>Drivers</legend>
+                            <div class="field">
+                                <label for="religion">Religion/Deity</label>
+                                <input type="text" id="religion" name="psyche_religion" />
+                            </div>
+                            <div class="field">
+                                <label for="motivation">Motivation (Resilience)</label>
+                                <input type="text" id="motivation" name="psyche_motivation" />
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Psychology</legend>
+                            <div class="field">
+                                <label for="psychology">Psychology</label>
+                                <input type="text" id="psychology" name="psyche_psychology" />
+                            </div>
+                            <!-- TODO: Allow many inputs -->
+                        </fieldset>
+                        <fieldset>
+                            <legend>Ambitions</legend>
+                            <div class="field">
+                                <label for="short-ambition">Short-Term Ambition</label>
+                                <input type="text" id="short-ambition" name="psyche_short-ambition" />
+                            </div>
+                            <div class="field">
+                                <label for="long-ambition">Long-Term Ambition</label>
+                                <input type="text" id="long-ambition" name="psyche_long-ambition" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+            </div>
+            <div class="section-column">
+                <section>
+                    <h2>Career</h2>
+                    <hr>
+                    <form>
+                        <fieldset>
+                            <legend>Career</legend>
+                            <div class="field">
+                                <label for="class">Class</label>
+                                <select id="class" name="career_class">
+                                    <option value="">Choose...</option>
+                                    <option value="academic">Academic</option>
+                                    <option value="burgher">Burgher</option>
+                                    <option value="courtier">Courtier</option>
+                                    <option value="peasant">Peasant</option>
+                                    <option value="ranger">Ranger</option>
+                                    <option value="riverfolk">Riverfolk</option>
+                                    <option value="rogue">Rogue</option>
+                                    <option value="warrior">Warrior</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="career">Career</label>
+                                <select id="career" name="career_career">
+                                    <option value="">Not yet, sorry</option>
+                                    <!-- TODO: this -->
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="tier">Career Tier/Level</label>
+                                <select id="tier" name="career_tier">
+                                    <option value="">Not yet, sorry</option>
+                                    <!-- TODO: this -->
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="status">Status</label>
+                                <input type="text" id="status" name="career_status" />
+                                <!-- TODO: find a better way to handle status -->
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+                <section>
+                    <h2>Party</h2>
+                    <hr>
+                    <form>
+                        <fieldset>
+                            <legend>Basics</legend>
+                            <div class="field">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="party_name">
+                            </div>
+                            <div class="field">
+                                <label for="headquarters">Headquarters</label>
+                                <input type="text" id="headquarters" name="party_headquarters">
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Members</legend>
+                            <!-- TODO: this -->
+                        </fieldset>
+                        <fieldset>
+                            <legend>Ambitions</legend>
+                            <div class="field">
+                                <label for="short-ambition">Short-Term Ambition</label>
+                                <input type="text" id="short-ambition" name="party_short-ambition" />
+                            </div>
+                            <div class="field">
+                                <label for="long-ambition">Long-Term Ambition</label>
+                                <input type="text" id="long-ambition" name="party_long-ambition" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+            </div>
+            <div class="section-column">
+                <section>
+                    <h2>Experience</h2>
+                    <hr>
+                    <form>
+                        <fieldset>
+                            <legend>Experience</legend>
+                            <div class="field">
+                                <label for="current">Current/Unspent</label>
+                                <input type="number" id="current" name="experience_current" />
+                            </div>
+                            <div class="field">
+                                <label for="spent">Spent</label>
+                                <input type="number" id="spent" name="experience_spent" />
+                            </div>
+                            <div class="field">
+                                <label for="total">Total</label>
+                                <input disabled type="number" id="total" name="experience_total" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+            </div>
         </main>
     </body>
 </html>
