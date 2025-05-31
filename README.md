@@ -4,6 +4,8 @@ This is (read as, will be) a web-based character sheet for the Warhammer Fantasy
 
 Note that this tool **does not** store your information online. There is no built-in persistent storage on the internet of information you enter into this tool. Information will be stored in your browser or to a file on your computer, until we're able to support online file storage supplied by users, e.g. Google Drive, MS OneDrive, etc. **If you use browser storage, using incognito/private mode or clearing your browser data will delete your character data.** Ye hath been warned.
 
+This tool is inspired by [PSX's Google Sheets Character Sheet](https://docs.google.com/spreadsheets/d/11kVdeKdQCq99BW3tf74y8QNetJ7AldsvwTsLd8EL-rw/htmlview#), as [posted on Reddit](https://www.reddit.com/r/warhammerfantasyrpg/comments/97dmso/heres_my_extensive_wfrp_4e_google_sheets/).
+
 If things are missing or if there are things you want prioritized, please create an issue using the "Issues" tab above.
 
 ## Disclaimer
