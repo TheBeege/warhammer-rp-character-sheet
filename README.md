@@ -19,3 +19,7 @@ Fork. Submit a PR. Discuss.
 ### Code of Conduct
 
 We'll go with the "don't be a dick" mantra until more specifics are required. This includes no sexism, racism, etc. This also includes no personal attacks, though conflict about decisions and methods is encouraged.
+
+## References and Credits
+
+* Thanks to [morganney's tts-element project](https://github.com/morganney/tts-element) for a decent modular web components example.

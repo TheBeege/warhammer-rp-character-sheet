@@ -1,0 +1,20 @@
+<template>
+    <form>
+        <fieldset>
+            <legend><slot name="table-legend">Table</slot></legend>
+            <table class="editable-table">
+                <thead>
+                    <tr class="field-header-row">
+                        <th class="delete-header">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="template-record">
+                        <td class="table-row-delete"><button >&boxminus;</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="table-add">&boxplus;</button>
+        </fieldset>
+    </form>
+</template>

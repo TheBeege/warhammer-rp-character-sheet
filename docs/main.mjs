@@ -1,6 +1,12 @@
+import { EditableTable } from "./editable-table/element.mjs";
+
 /**
  * This is linked using the html `defer` attribute, so `onload` nonsense isn't necessary.
  */
+
+customElements.define("editable-table", EditableTable);
+
+const editableTable = customElements.get("editable-table");
 
 /**
  * This reads data from the triggering form event and persists it to browser storage.

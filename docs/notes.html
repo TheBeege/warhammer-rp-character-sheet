@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>[WiP] Warhammer Fantasy RP Character Sheet</title>
+        <link rel="stylesheet" href="main.css">
+        <script type="module" src="main.mjs"></script>
+        <!-- <script src="editable-table/element.mjs" type="module"></script> -->
+    </head>
+    <body>
+        <header>
+            <h1>[WiP] Warhammer Fantasy RP Character Sheet</h1>
+            <nav>
+                <ul>
+                    <a href="index.html"><li>Profile</li></a>
+                    <a href="#"><li>Attributes/Health</li></a>
+                    <a href="#"><li>Skills/Talents</li></a>
+                    <a href="#"><li>Weapons/Armor</li></a>
+                    <a href="#"><li>Gear</li></a>
+                    <a href="#"><li>Magic/Spells</li></a>
+                    <a href="#"><li>Religion/Prayers</li></a>
+                    <a href="#"><li>Background/Personality</li></a>
+                    <a href="#"><li class="selected-nav">Campaign Notes</li></a>
+                    <a href="#"><li>XP Log</li></a>
+                </ul>
+            </nav>
+            <hr>
+        </header>
+        <main>
+            <div class="section-column">
+                <section>
+                    <h2>NPCs</h2>
+                    <hr>
+                    <editable-table>
+                        <legend slot="table-legend">NPCs</legend>
+                        <span data-slot="field-headers">Name</span>
+                        <span data-slot="field-headers">Gender</span>
+                        <span data-slot="field-headers">Species</span>
+                        <span data-slot="field-headers">Organization/Location</span>
+                        <span data-slot="field-headers">Description/Notes</span>
+                        <span data-slot="field-headers">Alive?</span>
+                        <span data-slot="template-record" class="table-editable-text"></span>
+                        <span data-slot="template-record"><select>
+                            <option value="">Choose...</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select></span>
+                        <span data-slot="template-record"><select>
+                            <option value="">Choose...</option>
+                            <option value="human">Human</option>
+                            <option value="dwarf">Dwarf</option>
+                            <option value="halfling">Halfling</option>
+                            <option value="high-elf">High Elf</option>
+                            <option value="wood-elf">Wood Elf</option>
+                        </select></span>
+                        <span data-slot="template-record" class="table-editable-text"></span>
+                        <span data-slot="template-record" class="table-editable-text"></span>
+                        <span data-slot="template-record"></span>
+                    </editable-table>
+                    <form>
+                        <fieldset>
+                            <legend>Basic Attributes</legend>
+                            <div class="field">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="character_name" />
+                            </div>
+                            <div class="field">
+                                <label for="species">Species</label>
+                                <input type="text" id="species" name="character_species" />
+                            </div>
+                            <div class="field">
+                                <label for="gender">Gender</label><select id="gender" name="character_gender">
+                                    <option value="">Choose...</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </body>
+</html>
