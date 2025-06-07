@@ -6,8 +6,6 @@ import { EditableTable } from "./editable-table/element.mjs";
 
 customElements.define("editable-table", EditableTable);
 
-const editableTable = customElements.get("editable-table");
-
 /**
  * This reads data from the triggering form event and persists it to browser storage.
  * 
@@ -40,9 +38,9 @@ for (const field of allFields) {
     fillFieldFromStorage(field);
 
     // Trigger persisting data for every field
-    if (field.tagName === "select") {
+    if (field.tagName.toLowerCase() === "select") {
         field.addEventListener("change", persistFormInput);
-    } else if (field.tagName === "input") {
+    } else if (field.tagName.toLowerCase() === "input") {
         field.addEventListener("focusout", persistFormInput);
     }
 }
