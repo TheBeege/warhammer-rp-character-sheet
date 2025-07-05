@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>[WiP] Warhammer Fantasy RP Character Sheet</title>
+        <link rel="stylesheet" href="main.css">
+        <script type="module" src="main.mjs"></script>
+        <!-- <script src="editable-table/element.mjs" type="module"></script> -->
+    </head>
+    <body>
+        <header>
+            <h1>[WiP] Warhammer Fantasy RP Character Sheet</h1>
+            <nav>
+                <ul>
+                    <a href="index.html"><li>Profile</li></a>
+                    <a href="#"><li class="selected-nav">Attributes/Health</li></a>
+                    <a href="#"><li>Skills/Talents</li></a>
+                    <a href="#"><li>Weapons/Armor</li></a>
+                    <a href="#"><li>Gear</li></a>
+                    <a href="#"><li>Magic/Spells</li></a>
+                    <a href="#"><li>Religion/Prayers</li></a>
+                    <a href="#"><li>Background/Personality</li></a>
+                    <a href="notes.html"><li>Campaign Notes</li></a>
+                    <a href="#"><li>XP Log</li></a>
+                </ul>
+            </nav>
+            <hr>
+        </header>
+        <main>
+            <div class="section-column">
+                <section>
+                    <h2>Characteristics</h2>
+                    <hr>
+                    <form>
+                        <fieldset id="weapon-skill">
+                            <legend>WS - Weapon Skill</legend>
+                            <div class="field">
+                                <label for="ws_career">Career</label>
+                                <input type="text" id="ws_career" name="characteristic_ws_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="ws_initial">Initial</label>
+                                <input type="number" id="ws_initial" name="characteristic_ws_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="ws_advances">Advances</label>
+                                <input type="number" id="ws_advances" name="characteristic_ws_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="ws_modifiers">Modifiers</label>
+                                <input type="number" disabled id="ws_modifiers" name="characteristic_ws_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="ws_current">Current</label>
+                                <input type="number" disabled id="ws_current" name="characteristic_ws_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="ballistic-skill">
+                            <legend>BS - Ballistic Skill</legend>
+                            <div class="field">
+                                <label for="bs_career">Career</label>
+                                <input type="text" id="bs_career" name="characteristic_bs_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="bs_initial">Initial</label>
+                                <input type="number" id="bs_initial" name="characteristic_bs_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="bs_advances">Advances</label>
+                                <input type="number" id="bs_advances" name="characteristic_bs_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="bs_modifiers">Modifiers</label>
+                                <input type="number" disabled id="bs_modifiers" name="characteristic_bs_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="bs_current">Current</label>
+                                <input type="number" disabled id="bs_current" name="characteristic_bs_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="strength">
+                            <legend>S - Strength</legend>
+                            <div class="field">
+                                <label for="s_career">Career</label>
+                                <input type="text" id="s_career" name="characteristic_s_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="s_initial">Initial</label>
+                                <input type="number" id="s_initial" name="characteristic_s_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="s_advances">Advances</label>
+                                <input type="number" id="s_advances" name="characteristic_s_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="s_modifiers">Modifiers</label>
+                                <input type="number" disabled id="s_modifiers" name="characteristic_s_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="s_current">Current</label>
+                                <input type="number" disabled id="s_current" name="characteristic_s_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="toughness">
+                            <legend>T - Toughness</legend>
+                            <div class="field">
+                                <label for="t_career">Career</label>
+                                <input type="text" id="t_career" name="characteristic_t_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="t_initial">Initial</label>
+                                <input type="number" id="t_initial" name="characteristic_t_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="t_advances">Advances</label>
+                                <input type="number" id="t_advances" name="characteristic_t_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="t_modifiers">Modifiers</label>
+                                <input type="number" disabled id="t_modifiers" name="characteristic_t_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="t_current">Current</label>
+                                <input type="number" disabled id="t_current" name="characteristic_t_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="initiative">
+                            <legend>I - Initiative</legend>
+                            <div class="field">
+                                <label for="i_career">Career</label>
+                                <input type="text" id="i_career" name="characteristic_i_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="i_initial">Initial</label>
+                                <input type="number" id="i_initial" name="characteristic_i_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="i_advances">Advances</label>
+                                <input type="number" id="i_advances" name="characteristic_i_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="i_modifiers">Modifiers</label>
+                                <input type="number" disabled id="i_modifiers" name="characteristic_i_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="i_current">Current</label>
+                                <input type="number" disabled id="i_current" name="characteristic_i_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="agility">
+                            <legend>Ag - Agility</legend>
+                            <div class="field">
+                                <label for="ag_career">Career</label>
+                                <input type="text" id="ag_career" name="characteristic_ag_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="ag_initial">Initial</label>
+                                <input type="number" id="ag_initial" name="characteristic_ag_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="ag_advances">Advances</label>
+                                <input type="number" id="ag_advances" name="characteristic_ag_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="ag_modifiers">Modifiers</label>
+                                <input type="number" disabled id="ag_modifiers" name="characteristic_ag_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="ag_current">Current</label>
+                                <input type="number" disabled id="ag_current" name="characteristic_ag_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="dexterity">
+                            <legend>Dex - Dexterity</legend>
+                            <div class="field">
+                                <label for="dex_career">Career</label>
+                                <input type="text" id="dex_career" name="characteristic_dex_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="dex_initial">Initial</label>
+                                <input type="number" id="dex_initial" name="characteristic_dex_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="dex_advances">Advances</label>
+                                <input type="number" id="dex_advances" name="characteristic_dex_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="dex_modifiers">Modifiers</label>
+                                <input type="number" disabled id="dex_modifiers" name="characteristic_dex_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="dex_current">Current</label>
+                                <input type="number" disabled id="dex_current" name="characteristic_dex_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="intelligence">
+                            <legend>Int - Intelligence</legend>
+                            <div class="field">
+                                <label for="int_career">Career</label>
+                                <input type="text" id="int_career" name="characteristic_int_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="int_initial">Initial</label>
+                                <input type="number" id="int_initial" name="characteristic_int_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="int_advances">Advances</label>
+                                <input type="number" id="int_advances" name="characteristic_int_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="int_modifiers">Modifiers</label>
+                                <input type="number" disabled id="int_modifiers" name="characteristic_int_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="int_current">Current</label>
+                                <input type="number" disabled id="int_current" name="characteristic_int_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="willpower">
+                            <legend>WP - Willpower</legend>
+                            <div class="field">
+                                <label for="wp_career">Career</label>
+                                <input type="text" id="wp_career" name="characteristic_wp_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="wp_initial">Initial</label>
+                                <input type="number" id="wp_initial" name="characteristic_wp_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="wp_advances">Advances</label>
+                                <input type="number" id="wp_advances" name="characteristic_wp_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="wp_modifiers">Modifiers</label>
+                                <input type="number" disabled id="wp_modifiers" name="characteristic_wp_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="wp_current">Current</label>
+                                <input type="number" disabled id="wp_current" name="characteristic_wp_current" />
+                            </div>
+                        </fieldset>
+                        <fieldset id="fellowship">
+                            <legend>Fel - Fellowship</legend>
+                            <div class="field">
+                                <label for="fel_career">Career</label>
+                                <input type="text" id="fel_career" name="characteristic_fel_career" value="&#9769 test" />
+                            </div>
+                            <div class="field">
+                                <label for="fel_initial">Initial</label>
+                                <input type="number" id="fel_initial" name="characteristic_fel_initial" />
+                            </div>
+                            <div class="field">
+                                <label for="fel_advances">Advances</label>
+                                <input type="number" id="fel_advances" name="characteristic_fel_advances" />
+                            </div>
+                            <div class="field">
+                                <label for="fel_modifiers">Modifiers</label>
+                                <input type="number" disabled id="fel_modifiers" name="characteristic_fel_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="fel_current">Current</label>
+                                <input type="number" disabled id="fel_current" name="characteristic_fel_current" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+            </div>
+            <div class="section-column">
+                <section>
+                    <h2>Movement</h2>
+                    <hr>
+                    <form>
+                        <fieldset id="movement">
+                            <legend>Movement</legend>
+                            <div class="field">
+                                <label for="base_move">Base Movement</label>
+                                <input type="number" id="base_move" name="movement_base" />
+                            </div>
+                            <div class="field">
+                                <!-- TODO: Include encumberance in modifier -->
+                                <label for="move_modifiers">Modifiers</label>
+                                <input disabled type="number" id="move_modifiers" name="movement_modifiers" />
+                            </div>
+                            <div class="field">
+                                <label for="current_movement">Current Movement (M)</label>
+                                <input type="number" id="current_movement" name="movement_current" />
+                            </div>
+                            <div class="field">
+                                <label for="walk">Walk</label>
+                                <input disabled type="number" id="walk" name="movement_walk" />
+                            </div>
+                            <div class="field">
+                                <label for="run">Run</label>
+                                <input disabled type="number" id="run" name="movement_walk" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+                <section>
+                    <h2>Fate & Resilience</h2>
+                    <hr>
+                    <form>
+                        <fieldset id="fate-resilience">
+                            <legend>Fate & Resilience</legend>
+                            <div class="field">
+                                <label for="fate">Fate</label>
+                                <input type="number" id="fate" name="fate-resilience_fate" />
+                            </div>
+                            <div class="field">
+                                <label for="fortune">Fortune</label>
+                                <input type="number" id="fortune" name="fate-resilience_fortune" />
+                            </div>
+                            <div class="field">
+                                <label for="resilience">Resilience</label>
+                                <input type="number" id="resilience" name="fate-resilience_resilience" />
+                            </div>
+                            <div class="field">
+                                <label for="resolve">Resolve</label>
+                                <input type="number" id="resolve" name="fate-resilience_resolve" />
+                            </div>
+                        </fieldset>
+                    </form>
+                </section>
+                <!-- TODO: Conditions, Wounds, Injuries & Disease -->
+            </div>
+        </main>
+    </body>
+</html>
