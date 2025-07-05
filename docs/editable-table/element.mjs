@@ -60,6 +60,7 @@ export class EditableTable extends HTMLElement {
         }
 
         this.addRecordRow = templateRecordRow.cloneNode(true);
+        console.debug(this.addRecordRow);
 
         const clonedNode = template.content.cloneNode(true);
         this.shadowRoot.appendChild(clonedNode);
@@ -83,6 +84,8 @@ export class EditableTable extends HTMLElement {
 
         const newRowDeleteButton = newRow.querySelector(".table-row-delete button");
         newRowDeleteButton.addEventListener("click", this.removeListItem, false);
+
+        this.dispatchEvent(new Event("slotchange"));
     }
 
     removeListItem(event) {
