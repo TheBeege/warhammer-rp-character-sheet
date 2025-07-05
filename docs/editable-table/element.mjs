@@ -38,8 +38,9 @@ export class EditableTable extends HTMLElement {
         const templateRecordRow = template.content.querySelector(".template-record");
         const tableDeleteRow = template.content.querySelector(".table-row-delete");
 
-        const fields = Array.from(this.querySelectorAll(`span[data-slot="field-headers"]`))
-        const templateRecordPlaceholders = Array.from(this.querySelectorAll(`span[data-slot="template-record"]`))
+        const fields = Array.from(this.querySelectorAll(`span[data-slot="field-headers"]`));
+        const templateRecordPlaceholders = Array.from(this.querySelectorAll(`span[data-slot="template-record"]`));
+
         for (let i = 0; i < fields.length; i++) {
             const fieldTableHead = document.createElement("th");
             const fieldTableHeadSlot = document.createElement("slot");
@@ -59,8 +60,8 @@ export class EditableTable extends HTMLElement {
             templateRecordRow.insertBefore(templateRecordCell, tableDeleteRow);
         }
 
-        this.addRecordRow = templateRecordRow.cloneNode(true);
-        console.debug(this.addRecordRow);
+        // Store the template elements for cloning later
+        this.templateRecordElements = templateRecordPlaceholders;
 
         const clonedNode = template.content.cloneNode(true);
         this.shadowRoot.appendChild(clonedNode);
@@ -77,15 +78,53 @@ export class EditableTable extends HTMLElement {
 
     addListItem(event) {
         event.preventDefault();
-
+    
         const tableBody = this.shadowRoot.querySelector("tbody");
-        const newRow = this.addRecordRow.cloneNode(true);
+        const newRow = document.createElement("tr");
+        
+        // Clone each template record element from the light DOM
+        const templateElements = this.querySelectorAll('span[data-slot="template-record"]');
+        
+        for(const templateElement of templateElements) {
+            const cell = document.createElement("td");
+            const clonedContent = templateElement.cloneNode(true);
+            
+            // Clear any form values
+            this.clearFormElement(clonedContent);
+            
+            cell.appendChild(clonedContent);
+            newRow.appendChild(cell);
+        }
+        
+        // Add delete button
+        const deleteCell = document.createElement("td");
+        deleteCell.className = "table-row-delete";
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "⊟";
+        deleteButton.addEventListener("click", this.removeListItem, false);
+        deleteCell.appendChild(deleteButton);
+        newRow.appendChild(deleteCell);
+        
         tableBody.appendChild(newRow);
+    }
 
-        const newRowDeleteButton = newRow.querySelector(".table-row-delete button");
-        newRowDeleteButton.addEventListener("click", this.removeListItem, false);
-
-        this.dispatchEvent(new Event("slotchange"));
+    clearFormElement(element) {
+        // Clear form elements to default state
+        if (element.tagName === 'INPUT') {
+            if (element.type === 'checkbox' || element.type === 'radio') {
+                element.checked = false;
+            } else {
+                element.value = '';
+            }
+        } else if (element.tagName === 'SELECT') {
+            element.selectedIndex = 0;
+        } else if (element.tagName === 'TEXTAREA') {
+            element.value = '';
+        }
+        
+        // Also clear any child form elements
+        const childFormElements = element.querySelectorAll('input, select, textarea');
+        childFormElements.forEach(child => this.clearFormElement(child));
     }
 
     removeListItem(event) {
