@@ -12,6 +12,15 @@ If things are missing or if there are things you want prioritized, please create
 
 Warhammer is an intellectual property of Games Workshop. This tool makes no claim of ownership or responsibility for Games Workshop's intellectual property. This tool is intended to provide a helpful tool for players of the Warhammer Fantasy roleplaying game. This tool is **not** a replacement for the rulebooks and will specifically avoid acting as such. This tool assumes the user has access to a rulebook and understands the rules. It is simply meant to digitize character tracking and reduce the labor in doing so.
 
+## Project Management
+
+This project is tracked in Linear. When committing changes, please reference the relevant Linear issue using one of these formats in your commit message:
+- `Fixes: WAR-XXX` - Automatically closes the issue when merged
+- `Closes: WAR-XXX` - Automatically closes the issue when merged  
+- `Refs: WAR-XXX` - Links the commit to the issue without closing it
+
+A Git commit template is configured to help with this formatting. It will automatically be used when you run `git commit`.
+
 ## Contributing
 
 Fork. Submit a PR. Discuss.

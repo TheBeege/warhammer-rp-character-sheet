@@ -1,0 +1,71 @@
+{
+  "agents": {
+    "planner": {
+      "name": "O3-Planner",
+      "model": "claude-3-opus-20240229",
+      "temperature": 0.2,
+      "role": "architect",
+      "capabilities": [
+        "create_detailed_plans",
+        "verify_requirements",
+        "decompose_tasks",
+        "review_implementations"
+      ],
+      "prompt_template": "planner_prompt.md"
+    },
+    "senior_developer": {
+      "name": "Sonnet-4-Senior",
+      "model": "claude-3-5-sonnet-20241022",
+      "temperature": 0.3,
+      "role": "senior_developer",
+      "capabilities": [
+        "complex_implementation",
+        "architecture_decisions",
+        "code_review",
+        "refactoring"
+      ],
+      "prompt_template": "senior_dev_prompt.md"
+    },
+    "developer": {
+      "name": "Sonnet-3.5-Developer",
+      "model": "claude-3-5-sonnet-20240620",
+      "temperature": 0.5,
+      "role": "developer",
+      "capabilities": [
+        "simple_implementation",
+        "bug_fixes",
+        "tests",
+        "documentation"
+      ],
+      "prompt_template": "developer_prompt.md"
+    },
+    "verifier": {
+      "name": "O3-Verifier",
+      "model": "claude-3-opus-20240229",
+      "temperature": 0.1,
+      "role": "verifier",
+      "capabilities": [
+        "verify_implementation",
+        "check_requirements",
+        "validate_tests",
+        "security_review"
+      ],
+      "prompt_template": "verifier_prompt.md"
+    }
+  },
+  "workflow": {
+    "planning_phase": {
+      "agent": "planner",
+      "outputs": ["detailed_plan.md", "requirements.md"]
+    },
+    "implementation_phase": {
+      "complex_tasks": "senior_developer",
+      "simple_tasks": "developer",
+      "parallel": true
+    },
+    "verification_phase": {
+      "agent": "verifier",
+      "checks": ["requirements_met", "tests_pass", "code_quality"]
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "warhammer-rp-character-sheet",
+  "version": "1.0.0",
+  "description": "Warhammer Role-Playing Character Sheet with Multi-Agent Development",
+  "type": "module",
+  "scripts": {
+    "agents:explain": "node agents/scripts/simple-agent.js explain",
+    "agents:workflow": "node agents/scripts/simple-agent.js workflow",
+    "agents:task": "node agents/scripts/simple-agent.js task",
+    "agent:plan": "node agents/scripts/simple-agent.js task planner",
+    "agent:develop": "node agents/scripts/simple-agent.js task developer",
+    "agent:senior": "node agents/scripts/simple-agent.js task senior_developer",
+    "agent:verify": "node agents/scripts/simple-agent.js task verifier",
+    "github:orchestrate": "node agents/scripts/github-orchestrator.js"
+  },
+  "keywords": [
+    "warhammer",
+    "rpg",
+    "character-sheet",
+    "multi-agent"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
