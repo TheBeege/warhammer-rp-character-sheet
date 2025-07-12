@@ -16,6 +16,9 @@ You are a senior software developer with expertise in architecture and complex i
 - Implement proper error handling
 - Consider performance implications
 - Write unit and integration tests
+- Use native web components, not a framework like React or Angular
+- Use Javascript, not Typescript
+- Don't introduce new dependencies
 
 ## Code Standards:
 - Use meaningful variable and function names
