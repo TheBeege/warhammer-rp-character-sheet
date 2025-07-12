@@ -1,7 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(grep:*)",
+      "mcp__linear-server__list_issues",
+      "Bash(npm run:*)",
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:developers.linear.app)",
+      "WebFetch(domain:linear.app)",
+      "WebFetch(domain:studio.apollographql.com)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }

@@ -1,0 +1,70 @@
+name: Autonomous Claude Agents
+
+on:
+  schedule:
+    # Run every 2 hours continuously
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'Force run Claude agents regardless of schedule'
+        required: false
+        default: 'false'
+  repository_dispatch:
+    types: [linear-webhook]
+
+jobs:
+  orchestrate-claude-agents:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "Claude Agent Bot"
+        git config --global user.email "claude-agents@noreply.github.com"
+
+    - name: Run Claude Agent Orchestrator
+      env:
+        CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      run: node agents/scripts/github-orchestrator.js
+
+    - name: Create Pull Request if changes made
+      if: success()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Check if we're on a feature branch with changes
+        if [[ $(git branch --show-current) != "main" ]] && [[ -n $(git diff --name-only main) ]]; then
+          # Push the branch
+          git push origin $(git branch --show-current)
+          
+          # Create PR using GitHub CLI
+          gh pr create \
+            --title "🤖 Claude Agent Implementation" \
+            --body "Automated implementation by Claude agents. Please review before merging." \
+            --head $(git branch --show-current) \
+            --base main
+        fi
