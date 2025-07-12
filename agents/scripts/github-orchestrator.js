@@ -25,12 +25,12 @@ class GitHubOrchestrator {
     this.loadEnvFile();
     
     // Environment variables
-    this.claudeApiKey = process.env.CLAUDE_API_KEY || process.env.ANTHROPIC_API_KEY;
+    this.claudeApiKey = process.env.ANTHROPIC_API_KEY;
     this.linearApiKey = process.env.LINEAR_API_KEY;
     this.githubToken = process.env.GITHUB_TOKEN;
     
     if (!this.claudeApiKey) {
-      throw new Error('CLAUDE_API_KEY or ANTHROPIC_API_KEY environment variable is required');
+      throw new Error('ANTHROPIC_API_KEY environment variable is required');
     }
   }
 

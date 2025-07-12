@@ -48,7 +48,7 @@ The autonomous agent system operates as follows:
 2. Fill in your API keys in `.env`:
    ```bash
    # Get from https://console.anthropic.com/
-   CLAUDE_API_KEY=your_claude_api_key_here
+   ANTHROPIC_API_KEY=your_claude_api_key_here
    
    # Get from https://linear.app/settings/api  
    LINEAR_API_KEY=your_linear_api_key_here
@@ -79,7 +79,7 @@ Configure these secrets in your GitHub repository settings:
 
 | Secret Name | Value | Source |
 |-------------|-------|---------|
-| `CLAUDE_API_KEY` | Your Anthropic API key | https://console.anthropic.com/ |
+| `ANTHROPIC_API_KEY` | Your Anthropic API key | https://console.anthropic.com/ |
 | `LINEAR_API_KEY` | Your Linear API key | https://linear.app/settings/api |
 
 Note: `GITHUB_TOKEN` is automatically provided by GitHub Actions.

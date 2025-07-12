@@ -45,10 +45,9 @@ jobs:
 
     - name: Run Claude Agent Orchestrator
       env:
-        CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
       run: node agents/scripts/github-orchestrator.js
 
     - name: Create Pull Request if changes made
