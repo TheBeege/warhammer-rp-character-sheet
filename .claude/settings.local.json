@@ -13,7 +13,12 @@
       "WebFetch(domain:linear.app)",
       "WebFetch(domain:studio.apollographql.com)",
       "Bash(git checkout:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(git stash:*)",
+      "Bash(git merge:*)"
     ],
     "deny": []
   }

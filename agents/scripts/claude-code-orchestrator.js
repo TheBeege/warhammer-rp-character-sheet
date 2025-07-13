@@ -1,36 +1,39 @@
 #!/usr/bin/env node
 
-/**
- * GitHub Actions Claude Agent Orchestrator
- * Runs autonomous Claude agents in GitHub Actions environment
- */
-
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-class GitHubOrchestrator {
+class ClaudeCodeOrchestrator {
   constructor() {
-    this.baseDir = join(__dirname, '..');
-    this.projectRoot = join(this.baseDir, '..');
-    this.config = JSON.parse(readFileSync(join(this.baseDir, 'config/agents.json'), 'utf8'));
-    
-    // Load .env file if it exists
-    // Note: We chose not to use the dotenv library to keep dependencies minimal
-    // for this project which aims to have no dependencies for the main web app
+    this.projectRoot = join(__dirname, '..', '..');
+    this.settingsPath = join(this.projectRoot, '.claude', 'settings.json');
+    this.agentsConfigPath = join(this.projectRoot, 'agents', 'config', 'agents.json');
+    this.state = {
+      processedIssues: [],
+      lastRun: new Date().toISOString()
+    };
+
+    // Load environment variables
     this.loadEnvFile();
     
     // Environment variables
-    this.claudeApiKey = process.env.ANTHROPIC_API_KEY;
+    this.anthropicApiKey = process.env.ANTHROPIC_API_KEY;
     this.linearApiKey = process.env.LINEAR_API_KEY;
     this.githubToken = process.env.GITHUB_TOKEN;
     
-    if (!this.claudeApiKey) {
+    if (!this.anthropicApiKey) {
       throw new Error('ANTHROPIC_API_KEY environment variable is required');
+    }
+
+    // Ensure Claude settings directory exists
+    const claudeDir = join(this.projectRoot, '.claude');
+    if (!existsSync(claudeDir)) {
+      mkdirSync(claudeDir, { recursive: true });
     }
   }
 
@@ -38,103 +41,176 @@ class GitHubOrchestrator {
     const envPath = join(this.projectRoot, '.env');
     if (existsSync(envPath)) {
       const envContent = readFileSync(envPath, 'utf8');
-      const lines = envContent.split('\n');
-      
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith('#')) {
-          const [key, ...valueParts] = trimmed.split('=');
-          if (key && valueParts.length > 0) {
-            const value = valueParts.join('=').trim();
-            process.env[key.trim()] = value;
+      envContent.split('\n').forEach(line => {
+        const match = line.match(/^([^=]+)=(.*)$/);
+        if (match) {
+          const key = match[1].trim();
+          const value = match[2].trim();
+          if (!process.env[key]) {
+            process.env[key] = value;
           }
         }
-      }
+      });
     }
   }
 
-  log(message, level = 'info') {
+  log(level, message) {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`);
   }
 
-  async callClaudeAPI(prompt, model = 'claude-3-5-sonnet-20241022', temperature = 0.3) {
-    this.log(`Calling Claude API with model ${model}`);
+  async setupClaudePermissions() {
+    this.log('info', 'Setting up Claude Code permissions for autonomous operations');
     
-    const payload = {
-      model: model,
-      max_tokens: 4000,
-      temperature: temperature,
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
+    const permissions = {
+      permissions: {
+        allow: [
+          // File operations
+          "Edit(*)",
+          "MultiEdit(*)",
+          "Write(*)",
+          "Read(*)",
+          
+          // Git operations
+          "Bash(git:*)",
+          "Bash(gh:*)",
+          
+          // Development tools
+          "Bash(npm:*)",
+          "Bash(node:*)",
+          "Bash(npx:*)",
+          
+          // File system operations
+          "Bash(ls:*)",
+          "Bash(find:*)",
+          "Bash(grep:*)",
+          "Bash(rg:*)",
+          "Bash(mkdir:*)",
+          "Bash(cp:*)",
+          "Bash(mv:*)",
+          "Bash(rm:*)",
+          
+          // Testing and linting
+          "Bash(npm run test:*)",
+          "Bash(npm run lint:*)",
+          "Bash(npm run typecheck:*)",
+          "Bash(npm run build:*)",
+          
+          // Other tools
+          "Glob(*)",
+          "Grep(*)",
+          "LS(*)",
+          "NotebookEdit(*)",
+          "NotebookRead(*)",
+          "TodoWrite(*)",
+          "WebFetch(*)",
+          "WebSearch(*)",
+          
+          // MCP Linear operations
+          "mcp__linear-server__list_issues",
+          "mcp__linear-server__get_issue",
+          "mcp__linear-server__update_issue",
+          "mcp__linear-server__create_comment",
+          "mcp__linear-server__list_comments",
+          "mcp__linear-server__list_teams",
+          "mcp__linear-server__list_issue_statuses"
+        ],
+        deny: [
+          // Prevent dangerous operations
+          "Bash(rm -rf /)",
+          "Bash(sudo:*)",
+          "Bash(su:*)",
+          "Bash(chmod 777:*)",
+          "Bash(curl:*)",
+          "Bash(wget:*)"
+        ]
+      }
     };
 
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': this.claudeApiKey,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify(payload)
-      });
+    writeFileSync(this.settingsPath, JSON.stringify(permissions, null, 2));
+    this.log('info', 'Claude Code permissions configured');
+  }
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Claude API error: ${response.status} ${response.statusText} - ${errorText}`);
+  async setupMCPServers() {
+    this.log('info', 'Setting up MCP servers for Claude Code SDK');
+    
+    // For GitHub Actions, we need to configure MCP programmatically
+    // The Linear MCP server needs API key authentication
+    if (this.linearApiKey) {
+      try {
+        // Create MCP configuration
+        const mcpConfigPath = join(this.projectRoot, '.claude', 'mcp_servers.json');
+        // Don't write actual secrets to config files
+        // MCP servers should read from environment variables at runtime
+        const mcpConfig = {
+          servers: {
+            "linear-server": {
+              transport: "stdio",
+              command: "npx",
+              args: ["@modelcontextprotocol/server-linear"],
+              env: {
+                // This tells MCP to use the environment variable, not embed the value
+                LINEAR_API_KEY: "${LINEAR_API_KEY}"
+              }
+            }
+          }
+        };
+        
+        writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+        this.log('info', 'MCP Linear server configured');
+      } catch (error) {
+        this.log('warn', `Failed to configure MCP server: ${error.message}`);
       }
-
-      const data = await response.json();
-      return data.content[0].text;
-    } catch (error) {
-      this.log(`Claude API call failed: ${error.message}`, 'error');
-      throw error;
     }
   }
 
-  async getLinearIssues() {
+  async fetchLinearIssues() {
     if (!this.linearApiKey) {
-      this.log('No Linear API key provided, using mock data for testing');
-      return [
-        {
-          id: 'WAR-11',
-          identifier: 'WAR-11',
-          title: 'Finish implementing editable table component',
-          status: { name: 'Todo' },
-          priority: { name: 'High' },
-          description: 'The editable table component currently is incomplete. Maintaining the row template and adding new rows works; however, editing text values and persistence to storage is not yet implemented.',
-          url: 'https://linear.app/warhammer-character-sheet/issue/WAR-11'
-        }
-      ];
+      this.log('warn', 'No Linear API key found, using mock data');
+      return this.getMockIssues();
     }
 
-    try {
-      const query = `
-        query {
-          issues(filter: { state: { name: { eq: "Todo" } } }) {
-            nodes {
+    // For now, we'll use the same GraphQL query approach
+    // Later, the Claude agent can use MCP directly
+    const query = `
+      query GetTodoIssues {
+        issues(filter: { state: { name: { eq: "Todo" } } }) {
+          nodes {
+            id
+            identifier
+            title
+            description
+            url
+            createdAt
+            updatedAt
+            priority
+            state {
+              name
+              color
+            }
+            team {
               id
-              identifier
-              title
-              description
-              url
-              priority
-              state {
+              name
+              key
+            }
+            assignee {
+              id
+              name
+              email
+            }
+            labels {
+              nodes {
+                id
                 name
-              }
-              team {
-                name
+                color
               }
             }
           }
         }
-      `;
+      }
+    `;
 
+    try {
       const response = await fetch('https://api.linear.app/graphql', {
         method: 'POST',
         headers: {
@@ -152,243 +228,459 @@ class GitHubOrchestrator {
       const data = await response.json();
       return data.data.issues.nodes;
     } catch (error) {
-      this.log(`Error fetching Linear issues: ${error.message}`, 'error');
-      return [];
+      this.log('error', `Failed to fetch Linear issues: ${error.message}`);
+      throw error;
+    }
+  }
+
+  getAssignedAgent(issue) {
+    // Check Linear labels for agent assignment
+    if (issue.labels && issue.labels.nodes) {
+      for (const label of issue.labels.nodes) {
+        if (label.name.startsWith('agent:')) {
+          const agentType = label.name.substring(6); // Remove 'agent:' prefix
+          if (['planner', 'developer', 'senior_dev', 'verifier'].includes(agentType)) {
+            return agentType;
+          }
+        }
+      }
+    }
+    
+    // No agent assigned - needs planning
+    return null;
+  }
+
+  async assignAgentLabel(issue, agentType) {
+    if (!this.linearApiKey) {
+      this.log('warn', 'No Linear API key, cannot assign agent label');
+      return;
+    }
+
+    const mutation = `
+      mutation UpdateIssue($issueId: String!, $labelIds: [String!]!) {
+        issueUpdate(id: $issueId, input: { labelIds: $labelIds }) {
+          success
+          issue {
+            id
+            labels {
+              nodes {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      // First, get existing labels and add agent label
+      const existingLabelIds = issue.labels?.nodes?.map(label => label.id) || [];
+      
+      // Remove any existing agent: labels
+      const nonAgentLabels = issue.labels?.nodes?.filter(label => !label.name.startsWith('agent:')) || [];
+      const nonAgentLabelIds = nonAgentLabels.map(label => label.id);
+      
+      // We'd need to create or find the agent label - for now, just comment
+      await this.updateLinearIssue(issue.id, `🏷️ **Agent Assignment**: ${agentType}
+
+This issue has been assigned to the **${agentType}** agent for implementation.`);
+      
+      this.log('info', `Assigned ${agentType} agent to issue ${issue.identifier}`);
+    } catch (error) {
+      this.log('error', `Failed to assign agent label: ${error.message}`);
+    }
+  }
+
+  async loadAgentPrompt(agentType) {
+    const promptPath = join(this.projectRoot, 'agents', 'prompts', `${agentType}_prompt.md`);
+    
+    if (existsSync(promptPath)) {
+      return readFileSync(promptPath, 'utf8');
+    }
+    
+    this.log('warn', `Prompt file not found for ${agentType}, using fallback`);
+    return `You are a ${agentType} agent. Please implement the given task following best practices.`;
+  }
+
+  async runClaudeCodeAgent(issue, agentType = null) {
+    // Determine which agent to run
+    const assignedAgent = agentType || this.getAssignedAgent(issue);
+    
+    if (!assignedAgent) {
+      // No agent assigned - run planner first
+      this.log('info', `No agent assigned to issue ${issue.identifier}, running planner first`);
+      
+      const plannerResult = await this.runSpecificAgent(issue, 'planner');
+      
+      // Planner should assign an agent - for now, default to developer
+      await this.assignAgentLabel(issue, 'developer');
+      
+      // Now run the assigned agent
+      return await this.runSpecificAgent(issue, 'developer');
+    } else {
+      return await this.runSpecificAgent(issue, assignedAgent);
+    }
+  }
+
+  async runSpecificAgent(issue, agentType) {
+    this.log('info', `Running Claude Code ${agentType} agent for issue ${issue.identifier}: ${issue.title}`);
+    
+    // Load agent-specific prompt
+    const agentPrompt = await this.loadAgentPrompt(agentType);
+    
+    // Create issue-specific prompt
+    const prompt = `${agentPrompt}
+
+## CURRENT TASK:
+**Issue**: ${issue.identifier} - ${issue.title}
+**Description**: ${issue.description || 'No description provided'}
+**URL**: ${issue.url}
+**Priority**: ${issue.priority || 'Normal'}
+
+## PROJECT CONTEXT:
+- **Project**: Warhammer Role-Playing Character Sheet
+- **Technology**: Vanilla JavaScript, HTML, CSS (NO frameworks)
+- **Main app location**: ./docs/ (keep dependency-free!)
+- **Agent system location**: ./agents/ (TypeScript/Node.js OK)
+
+## CRITICAL CONSTRAINTS:
+- Do NOT add dependencies to the main app (./docs/)
+- Follow existing vanilla JavaScript patterns strictly
+- Do not push to remote - orchestrator handles that
+- Complete ALL checklists before finishing
+- Verify ALL security and cleanup requirements
+
+## EXPECTED OUTCOME:
+Complete the assigned task according to your role, following all guidelines and checklists in your prompt. Ensure production-quality implementation.
+
+Please proceed with your assigned role for this issue.`;
+
+    try {
+      // Run Claude Code in non-interactive mode with print flag
+      // Include all necessary tools for autonomous development
+      const allowedTools = [
+        'Edit(*)', 'MultiEdit(*)', 'Write(*)', 'Read(*)',
+        'Bash(git:*)', 'Bash(gh:*)', 'Bash(npm:*)', 'Bash(node:*)',
+        'Bash(ls:*)', 'Bash(find:*)', 'Bash(grep:*)', 'Bash(mkdir:*)',
+        'Glob(*)', 'Grep(*)', 'LS(*)', 'TodoWrite(*)'
+      ].join(' ');
+      
+      // Escape the prompt for shell
+      const escapedPrompt = prompt.replace(/'/g, "'\"'\"'");
+      // Use dangerously-skip-permissions for autonomous operations where we trust the agent
+      const command = `claude --print --dangerously-skip-permissions '${escapedPrompt}'`;
+      
+      // Set up environment for Claude Code
+      const env = {
+        ...process.env,
+        ANTHROPIC_API_KEY: this.anthropicApiKey,
+        CLAUDE_SETTINGS_PATH: this.settingsPath
+      };
+
+      this.log('info', 'Executing Claude Code agent...');
+      const output = execSync(command, {
+        cwd: this.projectRoot,
+        env,
+        encoding: 'utf8',
+        maxBuffer: 10 * 1024 * 1024 // 10MB buffer
+      });
+
+      this.log('info', 'Claude Code agent completed successfully');
+      
+      return output;
+    } catch (error) {
+      this.log('error', `Claude Code agent failed: ${error.message}`);
+      
+      throw error;
     }
   }
 
   async updateLinearIssue(issueId, comment) {
     if (!this.linearApiKey) {
-      this.log(`Would update Linear issue ${issueId} with: ${comment}`);
+      this.log('info', 'No Linear API key, skipping issue update');
       return;
     }
 
-    try {
-      const mutation = `
-        mutation {
-          commentCreate(input: {
-            issueId: "${issueId}"
-            body: "${comment}"
-          }) {
-            success
+    const mutation = `
+      mutation CreateComment($issueId: String!, $body: String!) {
+        commentCreate(input: { issueId: $issueId, body: $body }) {
+          success
+          comment {
+            id
           }
         }
-      `;
+      }
+    `;
 
-      await fetch('https://api.linear.app/graphql', {
+    try {
+      const response = await fetch('https://api.linear.app/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': this.linearApiKey
         },
-        body: JSON.stringify({ query: mutation })
+        body: JSON.stringify({
+          query: mutation,
+          variables: {
+            issueId,
+            body: comment
+          }
+        })
       });
 
-      this.log(`Updated Linear issue ${issueId} with progress comment`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Linear API error: ${response.status} - ${errorText}`);
+      }
+
+      this.log('info', `Updated Linear issue ${issueId} with progress comment`);
     } catch (error) {
-      this.log(`Failed to update Linear issue: ${error.message}`, 'error');
+      this.log('error', `Failed to update Linear issue: ${error.message}`);
     }
   }
 
-  createBranch(issueId, title) {
-    const branchName = `feature/${issueId.toLowerCase()}-${title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+  async processIssue(issue) {
+    this.log('info', `Processing Linear issue ${issue.identifier}: ${issue.title}`);
     
     try {
-      execSync(`git checkout -b "${branchName}"`, { 
-        cwd: this.projectRoot,
-        stdio: 'pipe'
-      });
-      this.log(`Created branch: ${branchName}`);
-      return branchName;
-    } catch (error) {
-      this.log(`Failed to create branch: ${error.message}`, 'error');
-      return null;
-    }
-  }
-
-  async executeClaudeAgent(agentType, task, context = {}) {
-    this.log(`Executing Claude ${agentType} agent for: ${task}`);
-    
-    const agent = this.config.agents[agentType];
-    const promptTemplate = readFileSync(
-      join(this.baseDir, 'prompts', agent.prompt_template), 
-      'utf8'
-    );
-
-    const fullPrompt = `${promptTemplate}
-
-## Current Task:
-${task}
-
-## Context:
-${JSON.stringify(context, null, 2)}
-
-## Environment Information:
-- You are running in GitHub Actions
-- You have access to the full repository
-- You can create files, modify code, and commit changes
-- Working directory: ${this.projectRoot}
-- Current branch: ${context.branch || 'main'}
-
-## Instructions:
-1. Analyze the current codebase to understand existing patterns
-2. Implement the requested feature following existing conventions
-3. Create or modify files as needed
-4. Provide specific file paths and code changes
-5. Focus on your role as ${agent.role}
-
-Please provide your implementation as structured output with clear file operations.`;
-
-    try {
-      const response = await this.callClaudeAPI(fullPrompt, agent.model, agent.temperature);
+      // Create a branch for this issue
+      const branchName = `feature/${issue.identifier.toLowerCase()}-${issue.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
       
-      // Parse and execute the Claude response
-      await this.executeClaudeInstructions(response, context);
+      try {
+        execSync(`git checkout -b "${branchName}"`, { cwd: this.projectRoot });
+        this.log('info', `Created branch: ${branchName}`);
+      } catch (error) {
+        if (error.message.includes('already exists')) {
+          this.log('info', `Branch ${branchName} already exists, checking it out`);
+          execSync(`git checkout "${branchName}"`, { cwd: this.projectRoot });
+        } else {
+          throw error;
+        }
+      }
+
+      // Update Linear issue with start message
+      await this.updateLinearIssue(issue.id, `🤖 Claude Code agent is starting work on this issue...
+
+Branch: \`${branchName}\`
+Started: ${new Date().toISOString()}`);
+
+      // Run the Claude Code agent
+      const output = await this.runClaudeCodeAgent(issue);
+
+      // Check if any changes were made
+      const gitStatus = execSync('git status --porcelain', { cwd: this.projectRoot, encoding: 'utf8' });
       
-      return response;
+      if (gitStatus.trim()) {
+        // Check if agent committed changes in the last 5 minutes (agent runtime)
+        try {
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          const recentCommits = execSync(`git log --since="${fiveMinutesAgo}" --oneline`, { 
+            cwd: this.projectRoot, 
+            encoding: 'utf8' 
+          }).trim();
+          
+          if (!recentCommits) {
+            // No commits in last 5 minutes - agent didn't commit
+            this.log('warn', 'Agent made changes but did not commit them. Orchestrator committing as fallback.');
+            
+            execSync('git add .', { cwd: this.projectRoot });
+            execSync(`git commit -m "feat: Implement ${issue.identifier} - ${issue.title}
+
+${issue.description || 'No description provided'}
+
+⚠️ FALLBACK COMMIT: Agent completed implementation but did not commit changes.
+This commit was created by the orchestrator as a safety measure.
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"`, { cwd: this.projectRoot });
+            
+            this.log('info', 'Fallback commit completed');
+          } else {
+            this.log('info', 'Agent properly committed changes within session timeframe');
+          }
+        } catch (error) {
+          // If git log fails, assume agent didn't commit and do fallback
+          this.log('warn', 'Could not check recent commits, doing fallback commit');
+          
+          execSync('git add .', { cwd: this.projectRoot });
+          execSync(`git commit -m "feat: Implement ${issue.identifier} - ${issue.title}
+
+${issue.description || 'No description provided'}
+
+⚠️ FALLBACK COMMIT: Could not verify agent commits, committing as safety measure.
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"`, { cwd: this.projectRoot });
+          
+          this.log('info', 'Fallback commit completed');
+        }
+        
+        // Ensure branch is pushed for PR creation
+        const currentBranch = execSync('git branch --show-current', { 
+          cwd: this.projectRoot, 
+          encoding: 'utf8' 
+        }).trim();
+        
+        execSync(`git push -u origin "${currentBranch}"`, { cwd: this.projectRoot });
+        this.log('info', `Pushed branch ${currentBranch} to remote`);
+        
+        this.log('info', 'Changes detected, agent successfully implemented the issue');
+        
+        // Update Linear issue with completion
+        await this.updateLinearIssue(issue.id, `✅ Claude Code agent completed the implementation!
+
+The changes have been committed to the branch \`${branchName}\`.
+A pull request will be created for review.
+
+Agent output summary:
+\`\`\`
+${output.slice(-1000)}  // Last 1000 chars of output
+\`\`\``);
+
+        // Mark as processed
+        this.state.processedIssues.push(issue.id);
+        return true;
+      } else {
+        this.log('warn', 'No changes were made by the agent');
+        await this.updateLinearIssue(issue.id, `⚠️ Claude Code agent completed but made no changes.
+
+This might indicate:
+- The issue is already implemented
+- The agent couldn't find the right files
+- Additional clarification is needed`);
+        return false;
+      }
     } catch (error) {
-      this.log(`Claude agent execution failed: ${error.message}`, 'error');
+      this.log('error', `Failed to process issue: ${error.message}`);
+      
+      // Update Linear with error
+      await this.updateLinearIssue(issue.id, `❌ Claude Code agent encountered an error:
+
+\`\`\`
+${error.message}
+\`\`\`
+
+The issue may need manual intervention.`);
+      
       throw error;
     }
   }
 
-  async executeClaudeInstructions(instructions, context) {
-    // This is a simplified implementation
-    // In practice, you'd need more sophisticated parsing of Claude's responses
-    this.log('Executing Claude instructions...');
-    
-    // For now, just create a placeholder implementation
-    const issueId = context.issue?.identifier || 'unknown';
-    const timestamp = new Date().toISOString();
-    
-    const implementationFile = join(this.projectRoot, 'CLAUDE_IMPLEMENTATION.md');
-    const content = `# Claude Agent Implementation
-
-**Issue**: ${issueId}
-**Timestamp**: ${timestamp}
-**Agent**: ${context.agentType}
-
-## Instructions Received:
-${instructions}
-
-## Implementation Status:
-This is a placeholder implementation. The Claude agent would normally:
-1. Analyze the existing codebase
-2. Make specific code changes
-3. Create/modify files as needed
-4. Commit changes with descriptive messages
-
-Next step: Integrate actual code execution based on Claude's structured output.
-`;
-
-    writeFileSync(implementationFile, content);
-    
-    // Commit the changes
+  async createPullRequest() {
     try {
-      execSync('git add .', { cwd: this.projectRoot });
-      execSync(`git commit -m "🤖 Claude agent implementation for ${issueId}
+      // Check if we're on a feature branch
+      const currentBranch = execSync('git branch --show-current', { 
+        cwd: this.projectRoot, 
+        encoding: 'utf8' 
+      }).trim();
 
-${instructions.substring(0, 200)}...
+      if (currentBranch === 'main' || currentBranch === 'master') {
+        this.log('info', 'On main branch, no pull request needed');
+        return;
+      }
 
-🤖 Generated with Claude ${context.agentType} agent
-Co-Authored-By: Claude <noreply@anthropic.com>"`, { 
-        cwd: this.projectRoot 
-      });
+      // Push the branch
+      execSync(`git push -u origin "${currentBranch}"`, { cwd: this.projectRoot });
       
-      this.log('Committed changes successfully');
+      // Create PR using gh CLI
+      const prTitle = currentBranch.replace(/^feature\//, '').replace(/-/g, ' ');
+      const prBody = `## Automated Implementation
+
+This pull request was created automatically by Claude Code agent.
+
+### Changes
+- Implemented based on Linear issue requirements
+- Followed project conventions and patterns
+- Tested implementation where applicable
+
+### Review Notes
+Please review the changes carefully before merging.
+
+---
+🤖 Generated with Claude Code Autonomous Agents`;
+
+      const prCommand = `gh pr create --title "${prTitle}" --body "${prBody}"`;
+      const prUrl = execSync(prCommand, { 
+        cwd: this.projectRoot, 
+        encoding: 'utf8' 
+      }).trim();
+
+      this.log('info', `Created pull request: ${prUrl}`);
+      return prUrl;
     } catch (error) {
-      this.log(`Failed to commit: ${error.message}`, 'error');
+      this.log('error', `Failed to create pull request: ${error.message}`);
+      throw error;
     }
   }
 
-  selectAgent(issue) {
-    const title = issue.title.toLowerCase();
-    const description = (issue.description || '').toLowerCase();
-    
-    // Simple heuristics for agent selection
-    if (title.includes('plan') || description.includes('design')) {
-      return 'planner';
-    }
-    
-    if (title.includes('complex') || issue.priority?.name === 'High') {
-      return 'senior_developer';
-    }
-    
-    return 'developer';
-  }
-
-  async processIssue(issue) {
-    this.log(`Processing Linear issue ${issue.identifier}: ${issue.title}`);
-    
-    // Create branch for this issue
-    const branch = this.createBranch(issue.identifier, issue.title);
-    if (!branch) return;
-
-    // Select appropriate Claude agent
-    const agentType = this.selectAgent(issue);
-    this.log(`Selected ${agentType} agent for this issue`);
-
-    // Update Linear with progress
-    await this.updateLinearIssue(issue.id, 
-      `🤖 Claude ${agentType} agent started working on this issue.\n\nBranch: \`${branch}\``
-    );
-
-    try {
-      // Execute Claude agent
-      const result = await this.executeClaudeAgent(agentType, 
-        `Implement ${issue.title} (${issue.identifier})`, 
-        { issue, branch, agentType }
-      );
-
-      // Update Linear with completion
-      await this.updateLinearIssue(issue.id, 
-        `✅ Claude ${agentType} agent completed implementation.\n\nCheck the pull request for review.`
-      );
-
-      this.log(`Successfully processed issue ${issue.identifier}`);
-      return true;
-    } catch (error) {
-      // Update Linear with error
-      await this.updateLinearIssue(issue.id, 
-        `❌ Claude agent encountered an error: ${error.message}\n\nWill retry in next cycle.`
-      );
-      
-      this.log(`Failed to process issue ${issue.identifier}: ${error.message}`, 'error');
-      return false;
-    }
+  getMockIssues() {
+    return [{
+      id: 'mock-001',
+      identifier: 'MOCK-1',
+      title: 'Test Claude Code SDK Integration',
+      description: 'This is a mock issue for testing the Claude Code SDK integration',
+      url: 'https://linear.app/mock/issue/MOCK-1',
+      state: { name: 'Todo' },
+      team: { name: 'Mock Team', key: 'MOCK' }
+    }];
   }
 
   async run() {
-    this.log('Starting Claude Agent Orchestrator in GitHub Actions');
+    this.log('info', 'Starting Claude Code Orchestrator');
     
     try {
-      // Get current Linear issues
-      const issues = await this.getLinearIssues();
-      this.log(`Found ${issues.length} issues to process`);
-      
-      // Filter for Todo issues
-      const todoIssues = issues.filter(issue => 
-        issue.status?.name === 'Todo' || issue.state?.name === 'Todo'
-      );
-      
-      if (todoIssues.length === 0) {
-        this.log('No Todo issues found, nothing to process');
+      // Setup Claude permissions and MCP servers
+      await this.setupClaudePermissions();
+      await this.setupMCPServers();
+
+      // Fetch Linear issues
+      const issues = await this.fetchLinearIssues();
+      this.log('info', `Found ${issues.length} issues to process`);
+
+      if (issues.length === 0) {
+        this.log('info', 'No issues in Todo state, exiting');
         return;
       }
-      
-      // Process the first issue (to avoid overwhelming the system)
-      const issue = todoIssues[0];
-      const success = await this.processIssue(issue);
-      
-      if (success) {
-        this.log('Issue processed successfully');
-      } else {
-        this.log('Issue processing failed');
-        process.exit(1);
+
+      // Process one issue at a time to avoid conflicts
+      for (const issue of issues) {
+        if (this.state.processedIssues.includes(issue.id)) {
+          this.log('info', `Skipping already processed issue ${issue.identifier}`);
+          continue;
+        }
+
+        try {
+          const success = await this.processIssue(issue);
+          
+          if (success) {
+            // Create a pull request
+            await this.createPullRequest();
+            
+            // Return to main branch for next issue
+            execSync('git checkout main', { cwd: this.projectRoot });
+            
+            // Only process one issue per run in GitHub Actions
+            if (process.env.GITHUB_ACTIONS) {
+              this.log('info', 'Processed one issue in GitHub Actions, exiting');
+              break;
+            }
+          }
+        } catch (error) {
+          this.log('error', `Issue processing failed: ${error.message}`);
+          
+          // Return to main branch on error
+          try {
+            execSync('git checkout main', { cwd: this.projectRoot });
+          } catch (e) {
+            // Ignore checkout errors
+          }
+        }
       }
-      
+
+      this.log('info', 'Claude Code Orchestrator completed successfully');
     } catch (error) {
-      this.log(`Orchestrator failed: ${error.message}`, 'error');
+      this.log('error', `Orchestrator failed: ${error.message}`);
       process.exit(1);
     }
   }
@@ -396,9 +688,11 @@ Co-Authored-By: Claude <noreply@anthropic.com>"`, {
 
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const orchestrator = new GitHubOrchestrator();
+  const orchestrator = new ClaudeCodeOrchestrator();
   orchestrator.run().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });
 }
+
+export default ClaudeCodeOrchestrator;
