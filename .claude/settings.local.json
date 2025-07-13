@@ -20,7 +20,11 @@
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
       "Bash(git stash:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(gh pr list:*)",
+      "mcp__linear-server__get_issue",
+      "Bash(gh pr view:*)",
+      "mcp__linear-server__list_users"
     ],
     "deny": []
   }

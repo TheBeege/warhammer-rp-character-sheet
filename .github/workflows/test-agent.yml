@@ -45,6 +45,14 @@ jobs:
         else
           npm install
         fi
+    
+    - name: Install Claude Code CLI
+      run: |
+        # Install Claude Code CLI globally to make 'claude' available in PATH
+        npm install -g @anthropic-ai/claude-code
+        
+        # Verify installation
+        claude --version
 
     - name: Configure Git
       run: |
