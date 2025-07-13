@@ -37,18 +37,26 @@ jobs:
         else
           npm install
         fi
+    
+    - name: Install Claude Code CLI
+      run: |
+        # Install Claude Code globally
+        npm install -g @anthropic/claude-code
+        
+        # Verify installation
+        claude --version
 
     - name: Configure Git
       run: |
         git config --global user.name "Claude Agent Bot"
         git config --global user.email "claude-agents@noreply.github.com"
 
-    - name: Run Claude Agent Orchestrator
+    - name: Run Claude Code Orchestrator
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: node agents/scripts/github-orchestrator.js
+      run: node agents/scripts/claude-code-orchestrator.js
 
     - name: Create Pull Request if changes made
       if: success()

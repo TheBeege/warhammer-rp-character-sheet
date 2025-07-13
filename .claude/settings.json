@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(*)",
+      "MultiEdit(*)",
+      "Write(*)",
+      "Read(*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(npm:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:*)",
+      "Glob(*)",
+      "Grep(*)",
+      "LS(*)",
+      "NotebookEdit(*)",
+      "NotebookRead(*)",
+      "TodoWrite(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "mcp__linear-server__list_issues",
+      "mcp__linear-server__get_issue",
+      "mcp__linear-server__update_issue",
+      "mcp__linear-server__create_comment",
+      "mcp__linear-server__list_comments",
+      "mcp__linear-server__list_teams",
+      "mcp__linear-server__list_issue_statuses"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(sudo:*)",
+      "Bash(su:*)",
+      "Bash(chmod 777:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)"
+    ]
+  }
+}
