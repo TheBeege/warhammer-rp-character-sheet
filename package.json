@@ -11,7 +11,7 @@
     "agent:develop": "node agents/scripts/simple-agent.js task developer",
     "agent:senior": "node agents/scripts/simple-agent.js task senior_developer",
     "agent:verify": "node agents/scripts/simple-agent.js task verifier",
-    "github:orchestrate": "node agents/scripts/github-orchestrator.js"
+    "claude:orchestrate": "node agents/scripts/claude-code-orchestrator.js"
   },
   "keywords": [
     "warhammer",
