@@ -1,0 +1,89 @@
+name: Test Individual Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent_type:
+        description: 'Agent type to test'
+        required: true
+        type: choice
+        options:
+          - planner
+          - developer
+          - senior_dev
+          - verifier
+      task_description:
+        description: 'Task description for the agent (required if no Linear issue ID)'
+        required: false
+        type: string
+      linear_issue_id:
+        description: 'Linear issue ID (e.g., WAR-12) - if provided, task description is optional'
+        required: false
+        type: string
+
+jobs:
+  test-agent:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "Claude Agent Test Bot"
+        git config --global user.email "claude-test@noreply.github.com"
+
+    - name: Run Individual Agent Test
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Running ${{ inputs.agent_type }} agent..."
+        
+        if [ -n "${{ inputs.linear_issue_id }}" ]; then
+          echo "Testing with Linear issue: ${{ inputs.linear_issue_id }}"
+          node agents/scripts/simple-agent.js task ${{ inputs.agent_type }} "${{ inputs.linear_issue_id }}"
+        elif [ -n "${{ inputs.task_description }}" ]; then
+          echo "Testing with task description: ${{ inputs.task_description }}"
+          node agents/scripts/simple-agent.js task ${{ inputs.agent_type }} "${{ inputs.task_description }}"
+        else
+          echo "Error: Must provide either Linear issue ID or task description"
+          exit 1
+        fi
+
+    - name: Check Results
+      run: |
+        echo "Checking git status after agent execution..."
+        git status
+        
+        echo "Checking for any new files or changes..."
+        git diff --name-only
+        
+        echo "Checking logs directory..."
+        ls -la agents/logs/ || echo "No logs directory found"
+        
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Changes detected:"
+          git diff --stat
+        else
+          echo "No changes detected"
+        fi
