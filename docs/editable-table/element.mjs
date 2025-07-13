@@ -91,8 +91,18 @@ export class EditableTable extends HTMLElement {
                 const templateElement = this.templateRecordElements[templateElementIndex];
                 
                 if (templateElement) {
-                    // Clone the template element
-                    const input = templateElement.cloneNode(true);
+                    let input;
+                    
+                    // Check if this is a span with table-editable-text class
+                    if (templateElement.tagName === 'SPAN' && templateElement.classList.contains('table-editable-text')) {
+                        // Convert span to input element
+                        input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = templateElement.className;
+                    } else {
+                        // Clone the template element
+                        input = templateElement.cloneNode(true);
+                    }
                     
                     // Generate unique name for persistence
                     const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
@@ -153,7 +163,17 @@ export class EditableTable extends HTMLElement {
         // Clone each template record element from the light DOM
         this.templateRecordElements.forEach((templateElement, colIndex) => {
             const cell = document.createElement("td");
-            const clonedContent = templateElement.cloneNode(true);
+            let clonedContent;
+            
+            // Check if this is a span with table-editable-text class
+            if (templateElement.tagName === 'SPAN' && templateElement.classList.contains('table-editable-text')) {
+                // Convert span to input element
+                clonedContent = document.createElement('input');
+                clonedContent.type = 'text';
+                clonedContent.className = templateElement.className;
+            } else {
+                clonedContent = templateElement.cloneNode(true);
+            }
             
             // Generate unique name for persistence
             const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;

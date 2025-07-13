@@ -4,3 +4,26 @@
     border-width: 0.1rem;
     min-width: 10rem;
 }
+
+/* Responsive table styles */
+@media (max-width: 768px) {
+    .editable-table {
+        overflow-x: auto;
+        display: block;
+        white-space: nowrap;
+    }
+    
+    .editable-table th, .editable-table td {
+        min-width: 8rem;
+        padding: 0.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .editable-table th, .editable-table td {
+        min-width: 6rem;
+        padding: 0.25rem;
+        font-size: 0.8rem;
+    }
+}
