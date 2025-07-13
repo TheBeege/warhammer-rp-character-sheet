@@ -8,6 +8,9 @@
 import { readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { AgentRunner } from '../utils/agent-runner.js';
+import { LinearClient } from '../utils/linear-client.js';
+import { loadEnvFile, getRequiredEnv } from '../utils/env.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,7 +18,15 @@ const __dirname = dirname(__filename);
 class SimpleAgent {
   constructor() {
     this.agentsDir = join(__dirname, '..');
+    this.projectRoot = join(__dirname, '..', '..');
     this.config = JSON.parse(readFileSync(join(this.agentsDir, 'config/agents.json'), 'utf8'));
+    
+    // Load environment variables
+    loadEnvFile(this.projectRoot);
+    const linearApiKey = getRequiredEnv('LINEAR_API_KEY');
+    
+    this.agentRunner = new AgentRunner(this.projectRoot);
+    this.linearClient = new LinearClient(linearApiKey);
   }
 
   /**
@@ -110,6 +121,28 @@ Remember: Stay in character as a ${agent.role}. Focus on your specialized respon
     };
     return guidance[agentType] || "General purpose tasks";
   }
+
+  /**
+   * Run an agent directly on a Linear issue
+   */
+  async runAgentOnLinearIssue(agentType, issueId) {
+    console.log(`\n🤖 Running ${agentType} agent on Linear issue ${issueId}...\n`);
+    
+    try {
+      // Fetch Linear issue details
+      const issue = await this.linearClient.getIssue(issueId);
+      
+      // Execute agent using the shared agent runner
+      const output = await this.agentRunner.runAgentForIssue(agentType, issue);
+      
+      console.log('\n✅ Agent execution completed successfully');
+      return output;
+      
+    } catch (error) {
+      console.error('❌ Error running agent:', error.message);
+      throw error;
+    }
+  }
 }
 
 // Command line interface
@@ -124,13 +157,25 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       
     case 'task':
       const agentType = process.argv[3];
-      const task = process.argv.slice(4).join(' ');
-      if (!agentType || !task) {
-        console.log('Usage: node simple-agent.js task [agent-type] [task description]');
+      const taskOrIssueId = process.argv.slice(4).join(' ');
+      if (!agentType) {
+        console.log('Usage: node simple-agent.js task [agent-type] [issue-id OR task description]');
         console.log('Agent types: planner, senior_developer, developer, verifier');
+        console.log('Examples:');
+        console.log('  node simple-agent.js task developer WAR-12');
+        console.log('  node simple-agent.js task developer "Fix button styling"');
         break;
       }
-      agent.saveTask(agentType, task);
+      
+      // Check if it's a Linear issue ID pattern: alphanumeric-number
+      const linearIssuePattern = /^[A-Za-z0-9]+-\d+$/;
+      if (taskOrIssueId && linearIssuePattern.test(taskOrIssueId)) {
+        agent.runAgentOnLinearIssue(agentType, taskOrIssueId);
+      } else if (taskOrIssueId) {
+        agent.saveTask(agentType, taskOrIssueId);
+      } else {
+        console.log('Please provide either a Linear issue ID (ABC-123) or task description');
+      }
       break;
       
     case 'workflow':
