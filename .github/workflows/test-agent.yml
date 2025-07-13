@@ -1,0 +1,131 @@
+name: Test Individual Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      agent_type:
+        description: 'Agent type to test'
+        required: true
+        type: choice
+        options:
+          - planner
+          - developer
+          - senior_dev
+          - verifier
+      task_description:
+        description: 'Task description for the agent'
+        required: true
+        type: string
+      linear_issue_id:
+        description: 'Linear issue ID (optional, for testing Linear integration)'
+        required: false
+        type: string
+
+jobs:
+  test-agent:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+    
+    - name: Install Claude Code CLI
+      run: |
+        # Install Claude Code CLI globally (correct package name)
+        npm install -g @anthropic-ai/claude-code
+        
+        # Verify installation
+        claude --version
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "Claude Agent Test Bot"
+        git config --global user.email "claude-test@noreply.github.com"
+
+    - name: Test Agent Environment Setup
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Testing environment variables..."
+        echo "ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:0:8}..." 
+        echo "LINEAR_API_KEY: ${LINEAR_API_KEY:0:8}..."
+        echo "GITHUB_TOKEN: ${GITHUB_TOKEN:0:8}..."
+        
+        echo "Testing Claude Code access..."
+        claude --version
+        
+        echo "Testing git configuration..."
+        git config --list | grep user
+        
+        echo "Testing Linear API access..."
+        if [ -n "$LINEAR_API_KEY" ]; then
+          curl -H "Authorization: $LINEAR_API_KEY" \
+               -H "Content-Type: application/json" \
+               -d '{"query": "{ viewer { id name email } }"}' \
+               https://api.linear.app/graphql || echo "Linear API test failed"
+        fi
+
+    - name: Run Individual Agent Test
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Running ${{ inputs.agent_type }} agent with task: '${{ inputs.task_description }}'"
+        
+        if [ -n "${{ inputs.linear_issue_id }}" ]; then
+          echo "Testing Linear integration with issue: ${{ inputs.linear_issue_id }}"
+          # Run agent with Linear issue ID
+          node agents/scripts/simple-agent.js task ${{ inputs.agent_type }} "${{ inputs.linear_issue_id }}"
+        else
+          echo "Running agent without Linear integration"
+          # Run agent with just task description  
+          node agents/scripts/simple-agent.js task ${{ inputs.agent_type }} "${{ inputs.task_description }}"
+        fi
+
+    - name: Check Results
+      run: |
+        echo "Checking git status after agent execution..."
+        git status
+        
+        echo "Checking for any new files or changes..."
+        git diff --name-only
+        
+        echo "Checking logs directory..."
+        ls -la agents/logs/ || echo "No logs directory found"
+        
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Changes detected:"
+          git diff --stat
+        else
+          echo "No changes detected"
+        fi
+
+    - name: Cleanup Test Branch (if created)
+      if: always()
+      run: |
+        current_branch=$(git branch --show-current)
+        if [ "$current_branch" != "main" ]; then
+          echo "Cleaning up test branch: $current_branch"
+          git checkout main
+          git branch -D "$current_branch" || echo "Failed to delete branch"
+        fi
