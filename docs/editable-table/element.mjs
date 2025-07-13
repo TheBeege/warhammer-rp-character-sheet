@@ -94,19 +94,48 @@ export class EditableTable extends HTMLElement {
                     // Clone the template element
                     const input = templateElement.cloneNode(true);
                     
+                    // Convert editable text spans to input elements
+                    const editableInput = this.convertToEditableInput(input);
+                    
                     // Generate unique name for persistence
                     const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
-                    this.setFieldName(input, fieldName);
+                    this.setFieldName(editableInput, fieldName);
                     
                     // Clear the cell and add the input
                     cell.innerHTML = '';
-                    cell.appendChild(input);
+                    cell.appendChild(editableInput);
                     
                     // Set up persistence
-                    this.setupPersistence(input);
+                    this.setupPersistence(editableInput);
                 }
             }
         });
+    }
+
+    convertToEditableInput(element) {
+        // If element has class "table-editable-text", convert it to an input element
+        if (element.classList && element.classList.contains('table-editable-text')) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = element.textContent || '';
+            // Copy any other attributes that might be relevant
+            if (element.placeholder) input.placeholder = element.placeholder;
+            if (element.title) input.title = element.title;
+            return input;
+        }
+        
+        // If element contains children with table-editable-text class, convert them
+        const editableChildren = element.querySelectorAll('.table-editable-text');
+        editableChildren.forEach(child => {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = child.textContent || '';
+            if (child.placeholder) input.placeholder = child.placeholder;
+            if (child.title) input.title = child.title;
+            child.parentNode.replaceChild(input, child);
+        });
+        
+        return element;
     }
 
     setFieldName(element, baseName) {
@@ -137,12 +166,18 @@ export class EditableTable extends HTMLElement {
             if (formEl.tagName.toLowerCase() === "select") {
                 formEl.addEventListener("change", this.persistFormInput);
             } else if (formEl.tagName.toLowerCase() === "input") {
+                if (formEl.type === 'checkbox' || formEl.type === 'radio') {
+                    formEl.addEventListener("change", this.persistFormInput);
+                } else {
+                    formEl.addEventListener("focusout", this.persistFormInput);
+                }
+            } else if (formEl.tagName.toLowerCase() === "textarea") {
                 formEl.addEventListener("focusout", this.persistFormInput);
             }
         });
     }
 
-    addListItem(event) {
+    addListItem(event, loadFromStorage = false) {
         event.preventDefault();
         
         this.rowCounter++;
@@ -155,18 +190,23 @@ export class EditableTable extends HTMLElement {
             const cell = document.createElement("td");
             const clonedContent = templateElement.cloneNode(true);
             
+            // Convert editable text spans to input elements
+            const editableContent = this.convertToEditableInput(clonedContent);
+            
             // Generate unique name for persistence
             const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
-            this.setFieldName(clonedContent, fieldName);
+            this.setFieldName(editableContent, fieldName);
             
-            // Clear any form values
-            this.clearFormElement(clonedContent);
+            // Only clear form values if not loading from storage
+            if (!loadFromStorage) {
+                this.clearFormElement(editableContent);
+            }
             
-            cell.appendChild(clonedContent);
+            cell.appendChild(editableContent);
             newRow.appendChild(cell);
             
             // Set up persistence for this cell
-            this.setupPersistence(clonedContent);
+            this.setupPersistence(editableContent);
         });
         
         // Add delete button
@@ -194,6 +234,9 @@ export class EditableTable extends HTMLElement {
         // Remove the row
         row.remove();
         
+        // Reindex remaining rows and update their storage keys
+        this.reindexRows();
+        
         // Update row count
         this.updateRowCount();
         this.saveRowCount();
@@ -219,21 +262,44 @@ export class EditableTable extends HTMLElement {
     // Persistence methods (similar to main.mjs)
     persistFormInput(event) {
         const fieldName = event.target.getAttribute("name");
-        const fieldValue = event.target.value;
-        localStorage.setItem(fieldName, fieldValue);
+        let fieldValue;
+        
+        if (event.target.type === 'checkbox' || event.target.type === 'radio') {
+            fieldValue = event.target.checked.toString();
+        } else {
+            fieldValue = event.target.value;
+        }
+        
+        try {
+            localStorage.setItem(fieldName, fieldValue);
+        } catch (error) {
+            console.warn('Failed to save to localStorage:', error);
+        }
     }
 
     fillFieldFromStorage(field) {
         const fieldName = field.getAttribute("name");
-        const fieldValue = localStorage.getItem(fieldName);
-        if (fieldValue !== null) {
-            field.value = fieldValue;
+        try {
+            const fieldValue = localStorage.getItem(fieldName);
+            if (fieldValue !== null) {
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    field.checked = fieldValue === 'true';
+                } else {
+                    field.value = fieldValue;
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to load from localStorage:', error);
         }
     }
 
     saveRowCount() {
         const rowCount = this.shadowRoot.querySelectorAll("tbody tr").length;
-        localStorage.setItem(`table-${this.tableId}-row-count`, rowCount.toString());
+        try {
+            localStorage.setItem(`table-${this.tableId}-row-count`, rowCount.toString());
+        } catch (error) {
+            console.warn('Failed to save row count to localStorage:', error);
+        }
     }
 
     updateRowCount() {
@@ -245,18 +311,60 @@ export class EditableTable extends HTMLElement {
         // Clear all fields for this row
         this.templateRecordElements.forEach((_, colIndex) => {
             const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
-            localStorage.removeItem(fieldName);
+            try {
+                localStorage.removeItem(fieldName);
+            } catch (error) {
+                console.warn('Failed to remove from localStorage:', error);
+            }
         });
     }
 
     loadFromStorage() {
-        const storedRowCount = localStorage.getItem(`table-${this.tableId}-row-count`);
-        if (storedRowCount) {
-            const rowCount = parseInt(storedRowCount);
-            // We start with 1 row (the template), so add the remaining rows
-            for (let i = 1; i < rowCount; i++) {
-                this.addListItem(new Event('click'));
+        try {
+            const storedRowCount = localStorage.getItem(`table-${this.tableId}-row-count`);
+            if (storedRowCount) {
+                const rowCount = parseInt(storedRowCount);
+                // We start with 1 row (the template), so add the remaining rows
+                for (let i = 1; i < rowCount; i++) {
+                    this.addListItem(new Event('click'), true);
+                }
             }
+        } catch (error) {
+            console.warn('Failed to load from localStorage:', error);
         }
+    }
+
+    reindexRows() {
+        // Get all rows in the table
+        const rows = Array.from(this.shadowRoot.querySelectorAll("tbody tr"));
+        
+        // Reindex each row and update storage keys
+        rows.forEach((row, newIndex) => {
+            const cells = row.querySelectorAll("td:not(.table-row-delete)");
+            
+            cells.forEach((cell, colIndex) => {
+                const formElements = cell.querySelectorAll('input, select, textarea');
+                formElements.forEach(element => {
+                    const oldName = element.getAttribute('name');
+                    const newName = `table-${this.tableId}-row-${newIndex}-col-${colIndex}`;
+                    
+                    if (oldName !== newName) {
+                        // Move the stored value to the new key
+                        try {
+                            const storedValue = localStorage.getItem(oldName);
+                            if (storedValue !== null) {
+                                localStorage.setItem(newName, storedValue);
+                                localStorage.removeItem(oldName);
+                            }
+                        } catch (error) {
+                            console.warn('Failed to reindex localStorage:', error);
+                        }
+                        
+                        // Update the element's name attribute
+                        element.setAttribute('name', newName);
+                    }
+                });
+            });
+        });
     }
 }
