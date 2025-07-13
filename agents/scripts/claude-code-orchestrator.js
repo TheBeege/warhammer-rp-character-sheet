@@ -472,7 +472,59 @@ Started: ${new Date().toISOString()}`);
       const gitStatus = execSync('git status --porcelain', { cwd: this.projectRoot, encoding: 'utf8' });
       
       if (gitStatus.trim()) {
-        // Changes were made
+        // Check if agent committed changes in the last 5 minutes (agent runtime)
+        try {
+          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+          const recentCommits = execSync(`git log --since="${fiveMinutesAgo}" --oneline`, { 
+            cwd: this.projectRoot, 
+            encoding: 'utf8' 
+          }).trim();
+          
+          if (!recentCommits) {
+            // No commits in last 5 minutes - agent didn't commit
+            this.log('warn', 'Agent made changes but did not commit them. Orchestrator committing as fallback.');
+            
+            execSync('git add .', { cwd: this.projectRoot });
+            execSync(`git commit -m "feat: Implement ${issue.identifier} - ${issue.title}
+
+${issue.description || 'No description provided'}
+
+⚠️ FALLBACK COMMIT: Agent completed implementation but did not commit changes.
+This commit was created by the orchestrator as a safety measure.
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"`, { cwd: this.projectRoot });
+            
+            this.log('info', 'Fallback commit completed');
+          } else {
+            this.log('info', 'Agent properly committed changes within session timeframe');
+          }
+        } catch (error) {
+          // If git log fails, assume agent didn't commit and do fallback
+          this.log('warn', 'Could not check recent commits, doing fallback commit');
+          
+          execSync('git add .', { cwd: this.projectRoot });
+          execSync(`git commit -m "feat: Implement ${issue.identifier} - ${issue.title}
+
+${issue.description || 'No description provided'}
+
+⚠️ FALLBACK COMMIT: Could not verify agent commits, committing as safety measure.
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"`, { cwd: this.projectRoot });
+          
+          this.log('info', 'Fallback commit completed');
+        }
+        
+        // Ensure branch is pushed for PR creation
+        const currentBranch = execSync('git branch --show-current', { 
+          cwd: this.projectRoot, 
+          encoding: 'utf8' 
+        }).trim();
+        
+        execSync(`git push -u origin "${currentBranch}"`, { cwd: this.projectRoot });
+        this.log('info', `Pushed branch ${currentBranch} to remote`);
+        
         this.log('info', 'Changes detected, agent successfully implemented the issue');
         
         // Update Linear issue with completion

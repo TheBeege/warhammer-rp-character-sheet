@@ -15,7 +15,12 @@
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
       "WebFetch(domain:docs.anthropic.com)",
-      "Bash(gh repo view:*)"
+      "WebFetch(domain:github.com)",
+      "Bash(gh repo view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(git stash:*)",
+      "Bash(git merge:*)"
     ],
     "deny": []
   }
