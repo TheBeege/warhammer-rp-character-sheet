@@ -94,16 +94,34 @@ export class EditableTable extends HTMLElement {
                     // Clone the template element
                     const input = templateElement.cloneNode(true);
                     
-                    // Generate unique name for persistence
-                    const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
-                    this.setFieldName(input, fieldName);
-                    
-                    // Clear the cell and add the input
-                    cell.innerHTML = '';
-                    cell.appendChild(input);
-                    
-                    // Set up persistence
-                    this.setupPersistence(input);
+                    // Convert table-editable-text elements to actual input fields
+                    if (input.classList && input.classList.contains('table-editable-text')) {
+                        const textInput = document.createElement('input');
+                        textInput.type = 'text';
+                        textInput.className = 'table-editable-text';
+                        
+                        // Generate unique name for persistence
+                        const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
+                        textInput.setAttribute('name', fieldName);
+                        
+                        // Clear the cell and add the input
+                        cell.innerHTML = '';
+                        cell.appendChild(textInput);
+                        
+                        // Set up persistence
+                        this.setupPersistence(textInput);
+                    } else {
+                        // Generate unique name for persistence
+                        const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
+                        this.setFieldName(input, fieldName);
+                        
+                        // Clear the cell and add the input
+                        cell.innerHTML = '';
+                        cell.appendChild(input);
+                        
+                        // Set up persistence
+                        this.setupPersistence(input);
+                    }
                 }
             }
         });
@@ -137,6 +155,12 @@ export class EditableTable extends HTMLElement {
             if (formEl.tagName.toLowerCase() === "select") {
                 formEl.addEventListener("change", this.persistFormInput);
             } else if (formEl.tagName.toLowerCase() === "input") {
+                if (formEl.type === 'checkbox' || formEl.type === 'radio') {
+                    formEl.addEventListener("change", this.persistFormInput);
+                } else {
+                    formEl.addEventListener("focusout", this.persistFormInput);
+                }
+            } else if (formEl.tagName.toLowerCase() === "textarea") {
                 formEl.addEventListener("focusout", this.persistFormInput);
             }
         });
@@ -155,18 +179,35 @@ export class EditableTable extends HTMLElement {
             const cell = document.createElement("td");
             const clonedContent = templateElement.cloneNode(true);
             
-            // Generate unique name for persistence
-            const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
-            this.setFieldName(clonedContent, fieldName);
-            
-            // Clear any form values
-            this.clearFormElement(clonedContent);
-            
-            cell.appendChild(clonedContent);
-            newRow.appendChild(cell);
-            
-            // Set up persistence for this cell
-            this.setupPersistence(clonedContent);
+            // Convert table-editable-text elements to actual input fields
+            if (clonedContent.classList && clonedContent.classList.contains('table-editable-text')) {
+                const textInput = document.createElement('input');
+                textInput.type = 'text';
+                textInput.className = 'table-editable-text';
+                
+                // Generate unique name for persistence
+                const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
+                textInput.setAttribute('name', fieldName);
+                
+                cell.appendChild(textInput);
+                newRow.appendChild(cell);
+                
+                // Set up persistence for this cell
+                this.setupPersistence(textInput);
+            } else {
+                // Generate unique name for persistence
+                const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
+                this.setFieldName(clonedContent, fieldName);
+                
+                // Clear any form values
+                this.clearFormElement(clonedContent);
+                
+                cell.appendChild(clonedContent);
+                newRow.appendChild(cell);
+                
+                // Set up persistence for this cell
+                this.setupPersistence(clonedContent);
+            }
         });
         
         // Add delete button
@@ -219,15 +260,26 @@ export class EditableTable extends HTMLElement {
     // Persistence methods (similar to main.mjs)
     persistFormInput(event) {
         const fieldName = event.target.getAttribute("name");
-        const fieldValue = event.target.value;
+        let fieldValue;
+        
+        if (event.target.type === 'checkbox' || event.target.type === 'radio') {
+            fieldValue = event.target.checked.toString();
+        } else {
+            fieldValue = event.target.value;
+        }
+        
         localStorage.setItem(fieldName, fieldValue);
     }
 
     fillFieldFromStorage(field) {
         const fieldName = field.getAttribute("name");
         const fieldValue = localStorage.getItem(fieldName);
-        if (fieldValue !== null) {
-            field.value = fieldValue;
+        if (fieldValue !== null && fieldValue !== undefined) {
+            if (field.type === 'checkbox' || field.type === 'radio') {
+                field.checked = fieldValue === 'true';
+            } else {
+                field.value = fieldValue;
+            }
         }
     }
 
@@ -246,6 +298,17 @@ export class EditableTable extends HTMLElement {
         this.templateRecordElements.forEach((_, colIndex) => {
             const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
             localStorage.removeItem(fieldName);
+            
+            // Also clear any sub-elements (for complex form elements)
+            for (let subIndex = 0; subIndex < 10; subIndex++) {
+                const subFieldName = `${fieldName}-${subIndex}`;
+                const subFieldValue = localStorage.getItem(subFieldName);
+                if (subFieldValue !== null) {
+                    localStorage.removeItem(subFieldName);
+                } else {
+                    break; // No more sub-elements
+                }
+            }
         });
     }
 
