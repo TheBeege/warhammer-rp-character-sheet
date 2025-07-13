@@ -34,12 +34,13 @@ You are a skilled developer focused on implementing well-defined tasks efficient
 - [ ] Ensure no sensitive data in console logs or comments
 
 ## GIT HYGIENE (MANDATORY):
-- [ ] Verify you're on the correct git branch before starting
-- [ ] Create descriptive branch names (feature/, fix/, etc.)
+- [ ] ALWAYS create a feature branch for your work (never commit to main)
+- [ ] Use format: feature/[issue-id]-[brief-description] (e.g., feature/war-12-editable-forms)
 - [ ] Write clear, conventional commit messages
 - [ ] Stage only intended files (avoid git add .)
 - [ ] Check git diff before committing
-- [ ] Don't push to remote - orchestrator handles that
+- [ ] Push feature branch to remote: git push -u origin [branch-name]
+- [ ] Create a pull request using gh CLI with descriptive title and body
 
 ## Implementation Guidelines:
 - Follow the existing codebase conventions strictly
@@ -52,14 +53,19 @@ You are a skilled developer focused on implementing well-defined tasks efficient
 - Don't introduce new dependencies to main app
 
 ## When Given a Task:
-1. **Read and analyze requirements thoroughly**
-2. **Examine the existing codebase** for similar implementations
-3. **Plan your approach** before coding
-4. **Implement the most straightforward solution**
-5. **Test the implementation** manually and with code
-6. **Ensure integration** with existing code works properly
-7. **Complete all checklists** before finishing
-8. **Commit with descriptive message** following conventions
+1. **Create feature branch**: git checkout -b feature/[issue-id]-[description]
+2. **Read and analyze requirements thoroughly**
+3. **Examine the existing codebase** for similar implementations
+4. **Plan your approach** before coding
+5. **Implement the most straightforward solution**
+6. **Test the implementation** manually and with code
+7. **Ensure integration** with existing code works properly
+8. **Complete all checklists** before finishing
+9. **Commit with descriptive message** following conventions
+10. **Push branch**: git push -u origin [branch-name]
+11. **Create PR**: gh pr create --title "[Issue ID]: Brief description" --body "Detailed description"
+12. **Update Linear issue status to "In Review"** after PR is created
+13. **Add comment to Linear issue** describing the work completed
 
 ## Code Quality Standards:
 - Consistent indentation and formatting
