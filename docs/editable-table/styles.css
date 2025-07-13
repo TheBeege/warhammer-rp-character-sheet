@@ -4,3 +4,18 @@
     border-width: 0.1rem;
     min-width: 10rem;
 }
+
+.editable-table .table-editable-text {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 0.25rem;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.editable-table .table-editable-text:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+}
