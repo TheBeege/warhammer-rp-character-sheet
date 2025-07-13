@@ -233,30 +233,128 @@ class ClaudeCodeOrchestrator {
     }
   }
 
-  async runClaudeCodeAgent(issue) {
-    this.log('info', `Running Claude Code agent for issue ${issue.identifier}: ${issue.title}`);
+  getAssignedAgent(issue) {
+    // Check Linear labels for agent assignment
+    if (issue.labels && issue.labels.nodes) {
+      for (const label of issue.labels.nodes) {
+        if (label.name.startsWith('agent:')) {
+          const agentType = label.name.substring(6); // Remove 'agent:' prefix
+          if (['planner', 'developer', 'senior_dev', 'verifier'].includes(agentType)) {
+            return agentType;
+          }
+        }
+      }
+    }
     
-    // Create a prompt for the Claude Code agent
-    const prompt = `I need you to implement the following Linear issue:
+    // No agent assigned - needs planning
+    return null;
+  }
 
-Issue: ${issue.identifier} - ${issue.title}
-Description: ${issue.description || 'No description provided'}
-URL: ${issue.url}
+  async assignAgentLabel(issue, agentType) {
+    if (!this.linearApiKey) {
+      this.log('warn', 'No Linear API key, cannot assign agent label');
+      return;
+    }
 
-Instructions:
-1. Read and understand the issue requirements
-2. Implement the necessary changes following the project's conventions
-3. Test your implementation if possible
-4. Commit your changes with a descriptive message
-5. Update the Linear issue with your progress
+    const mutation = `
+      mutation UpdateIssue($issueId: String!, $labelIds: [String!]!) {
+        issueUpdate(id: $issueId, input: { labelIds: $labelIds }) {
+          success
+          issue {
+            id
+            labels {
+              nodes {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
+    `;
 
-Important:
-- Follow existing code patterns in the project
-- Use meaningful commit messages
-- If you encounter any blockers, document them
-- Do not push to remote - the orchestrator will handle that
+    try {
+      // First, get existing labels and add agent label
+      const existingLabelIds = issue.labels?.nodes?.map(label => label.id) || [];
+      
+      // Remove any existing agent: labels
+      const nonAgentLabels = issue.labels?.nodes?.filter(label => !label.name.startsWith('agent:')) || [];
+      const nonAgentLabelIds = nonAgentLabels.map(label => label.id);
+      
+      // We'd need to create or find the agent label - for now, just comment
+      await this.updateLinearIssue(issue.id, `🏷️ **Agent Assignment**: ${agentType}
 
-Please proceed with the implementation.`;
+This issue has been assigned to the **${agentType}** agent for implementation.`);
+      
+      this.log('info', `Assigned ${agentType} agent to issue ${issue.identifier}`);
+    } catch (error) {
+      this.log('error', `Failed to assign agent label: ${error.message}`);
+    }
+  }
+
+  async loadAgentPrompt(agentType) {
+    const promptPath = join(this.projectRoot, 'agents', 'prompts', `${agentType}_prompt.md`);
+    
+    if (existsSync(promptPath)) {
+      return readFileSync(promptPath, 'utf8');
+    }
+    
+    this.log('warn', `Prompt file not found for ${agentType}, using fallback`);
+    return `You are a ${agentType} agent. Please implement the given task following best practices.`;
+  }
+
+  async runClaudeCodeAgent(issue, agentType = null) {
+    // Determine which agent to run
+    const assignedAgent = agentType || this.getAssignedAgent(issue);
+    
+    if (!assignedAgent) {
+      // No agent assigned - run planner first
+      this.log('info', `No agent assigned to issue ${issue.identifier}, running planner first`);
+      
+      const plannerResult = await this.runSpecificAgent(issue, 'planner');
+      
+      // Planner should assign an agent - for now, default to developer
+      await this.assignAgentLabel(issue, 'developer');
+      
+      // Now run the assigned agent
+      return await this.runSpecificAgent(issue, 'developer');
+    } else {
+      return await this.runSpecificAgent(issue, assignedAgent);
+    }
+  }
+
+  async runSpecificAgent(issue, agentType) {
+    this.log('info', `Running Claude Code ${agentType} agent for issue ${issue.identifier}: ${issue.title}`);
+    
+    // Load agent-specific prompt
+    const agentPrompt = await this.loadAgentPrompt(agentType);
+    
+    // Create issue-specific prompt
+    const prompt = `${agentPrompt}
+
+## CURRENT TASK:
+**Issue**: ${issue.identifier} - ${issue.title}
+**Description**: ${issue.description || 'No description provided'}
+**URL**: ${issue.url}
+**Priority**: ${issue.priority || 'Normal'}
+
+## PROJECT CONTEXT:
+- **Project**: Warhammer Role-Playing Character Sheet
+- **Technology**: Vanilla JavaScript, HTML, CSS (NO frameworks)
+- **Main app location**: ./docs/ (keep dependency-free!)
+- **Agent system location**: ./agents/ (TypeScript/Node.js OK)
+
+## CRITICAL CONSTRAINTS:
+- Do NOT add dependencies to the main app (./docs/)
+- Follow existing vanilla JavaScript patterns strictly
+- Do not push to remote - orchestrator handles that
+- Complete ALL checklists before finishing
+- Verify ALL security and cleanup requirements
+
+## EXPECTED OUTCOME:
+Complete the assigned task according to your role, following all guidelines and checklists in your prompt. Ensure production-quality implementation.
+
+Please proceed with your assigned role for this issue.`;
 
     try {
       // Run Claude Code in non-interactive mode with print flag

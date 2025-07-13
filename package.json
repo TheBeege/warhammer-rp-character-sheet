@@ -4,15 +4,17 @@
   "description": "Warhammer Role-Playing Character Sheet with Multi-Agent Development",
   "type": "module",
   "scripts": {
-    "agents:explain": "node agents/scripts/simple-agent.js explain",
-    "agents:workflow": "node agents/scripts/simple-agent.js workflow",
-    "agents:task": "node agents/scripts/simple-agent.js task",
-    "agent:plan": "node agents/scripts/simple-agent.js task planner",
-    "agent:develop": "node agents/scripts/simple-agent.js task developer",
-    "agent:senior": "node agents/scripts/simple-agent.js task senior_developer",
-    "agent:verify": "node agents/scripts/simple-agent.js task verifier",
-    "github:orchestrate": "node agents/scripts/github-orchestrator.js",
-    "claude:orchestrate": "node agents/scripts/claude-code-orchestrator.js"
+    "build:agents": "tsc --project agents/tsconfig.json",
+    "build:watch": "tsc --project agents/tsconfig.json --watch",
+    "agents:explain": "npm run build:agents && node agents/dist/scripts/simple-agent.js explain",
+    "agents:workflow": "npm run build:agents && node agents/dist/scripts/simple-agent.js workflow",
+    "agents:task": "npm run build:agents && node agents/dist/scripts/simple-agent.js task",
+    "agent:plan": "npm run build:agents && node agents/dist/scripts/simple-agent.js task planner",
+    "agent:develop": "npm run build:agents && node agents/dist/scripts/simple-agent.js task developer",
+    "agent:senior": "npm run build:agents && node agents/dist/scripts/simple-agent.js task senior_developer",
+    "agent:verify": "npm run build:agents && node agents/dist/scripts/simple-agent.js task verifier",
+    "github:orchestrate": "npm run build:agents && node agents/dist/scripts/github-orchestrator.js",
+    "claude:orchestrate": "npm run build:agents && node agents/dist/scripts/claude-code-orchestrator.js"
   },
   "keywords": [
     "warhammer",
@@ -21,6 +23,13 @@
     "multi-agent"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-code": "^1.0.0"
   }
 }

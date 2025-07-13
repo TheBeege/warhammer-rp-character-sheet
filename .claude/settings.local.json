@@ -14,7 +14,8 @@
       "WebFetch(domain:studio.apollographql.com)",
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(gh repo view:*)"
     ],
     "deny": []
   }

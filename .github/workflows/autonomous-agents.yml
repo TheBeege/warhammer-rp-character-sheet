@@ -40,8 +40,8 @@ jobs:
     
     - name: Install Claude Code CLI
       run: |
-        # Install Claude Code globally
-        npm install -g @anthropic/claude-code
+        # Install Claude Code CLI globally (correct package name)
+        npm install -g @anthropic-ai/claude-code
         
         # Verify installation
         claude --version
