@@ -94,6 +94,9 @@ export class EditableTable extends HTMLElement {
                     // Clone the template element
                     const input = templateElement.cloneNode(true);
                     
+                    // Convert editable text spans to input elements
+                    this.convertEditableTextToInput(input);
+                    
                     // Generate unique name for persistence
                     const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
                     this.setFieldName(input, fieldName);
@@ -107,6 +110,48 @@ export class EditableTable extends HTMLElement {
                 }
             }
         });
+    }
+
+    convertEditableTextToInput(element) {
+        // If the element itself has the editable text class, convert it
+        if (element.classList && element.classList.contains('table-editable-text')) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = element.className;
+            
+            // Copy any existing attributes except class
+            for (const attr of element.attributes) {
+                if (attr.name !== 'class' && attr.name !== 'data-slot') {
+                    input.setAttribute(attr.name, attr.value);
+                }
+            }
+            
+            // Replace the element with the input
+            if (element.parentNode) {
+                element.parentNode.replaceChild(input, element);
+            }
+            return input;
+        }
+        
+        // Find and convert any child elements with editable text class
+        const editableElements = element.querySelectorAll('.table-editable-text');
+        editableElements.forEach(editableEl => {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = editableEl.className;
+            
+            // Copy any existing attributes except class
+            for (const attr of editableEl.attributes) {
+                if (attr.name !== 'class' && attr.name !== 'data-slot') {
+                    input.setAttribute(attr.name, attr.value);
+                }
+            }
+            
+            // Replace the element with the input
+            editableEl.parentNode.replaceChild(input, editableEl);
+        });
+        
+        return element;
     }
 
     setFieldName(element, baseName) {
@@ -154,6 +199,9 @@ export class EditableTable extends HTMLElement {
         this.templateRecordElements.forEach((templateElement, colIndex) => {
             const cell = document.createElement("td");
             const clonedContent = templateElement.cloneNode(true);
+            
+            // Convert editable text spans to input elements
+            this.convertEditableTextToInput(clonedContent);
             
             // Generate unique name for persistence
             const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
