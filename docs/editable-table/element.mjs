@@ -232,6 +232,9 @@ export class EditableTable extends HTMLElement {
         // Remove the row
         row.remove();
         
+        // Reindex remaining rows and update their storage keys
+        this.reindexRows();
+        
         // Update row count
         this.updateRowCount();
         this.saveRowCount();
@@ -265,24 +268,36 @@ export class EditableTable extends HTMLElement {
             fieldValue = event.target.value;
         }
         
-        localStorage.setItem(fieldName, fieldValue);
+        try {
+            localStorage.setItem(fieldName, fieldValue);
+        } catch (error) {
+            console.warn('Failed to save to localStorage:', error);
+        }
     }
 
     fillFieldFromStorage(field) {
         const fieldName = field.getAttribute("name");
-        const fieldValue = localStorage.getItem(fieldName);
-        if (fieldValue !== null) {
-            if (field.type === 'checkbox' || field.type === 'radio') {
-                field.checked = fieldValue === 'true';
-            } else {
-                field.value = fieldValue;
+        try {
+            const fieldValue = localStorage.getItem(fieldName);
+            if (fieldValue !== null) {
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    field.checked = fieldValue === 'true';
+                } else {
+                    field.value = fieldValue;
+                }
             }
+        } catch (error) {
+            console.warn('Failed to load from localStorage:', error);
         }
     }
 
     saveRowCount() {
         const rowCount = this.shadowRoot.querySelectorAll("tbody tr").length;
-        localStorage.setItem(`table-${this.tableId}-row-count`, rowCount.toString());
+        try {
+            localStorage.setItem(`table-${this.tableId}-row-count`, rowCount.toString());
+        } catch (error) {
+            console.warn('Failed to save row count to localStorage:', error);
+        }
     }
 
     updateRowCount() {
@@ -294,18 +309,60 @@ export class EditableTable extends HTMLElement {
         // Clear all fields for this row
         this.templateRecordElements.forEach((_, colIndex) => {
             const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
-            localStorage.removeItem(fieldName);
+            try {
+                localStorage.removeItem(fieldName);
+            } catch (error) {
+                console.warn('Failed to remove from localStorage:', error);
+            }
         });
     }
 
     loadFromStorage() {
-        const storedRowCount = localStorage.getItem(`table-${this.tableId}-row-count`);
-        if (storedRowCount) {
-            const rowCount = parseInt(storedRowCount);
-            // We start with 1 row (the template), so add the remaining rows
-            for (let i = 1; i < rowCount; i++) {
-                this.addListItem(new Event('click'));
+        try {
+            const storedRowCount = localStorage.getItem(`table-${this.tableId}-row-count`);
+            if (storedRowCount) {
+                const rowCount = parseInt(storedRowCount);
+                // We start with 1 row (the template), so add the remaining rows
+                for (let i = 1; i < rowCount; i++) {
+                    this.addListItem(new Event('click'));
+                }
             }
+        } catch (error) {
+            console.warn('Failed to load from localStorage:', error);
         }
+    }
+
+    reindexRows() {
+        // Get all rows in the table
+        const rows = Array.from(this.shadowRoot.querySelectorAll("tbody tr"));
+        
+        // Reindex each row and update storage keys
+        rows.forEach((row, newIndex) => {
+            const cells = row.querySelectorAll("td:not(.table-row-delete)");
+            
+            cells.forEach((cell, colIndex) => {
+                const formElements = cell.querySelectorAll('input, select, textarea');
+                formElements.forEach(element => {
+                    const oldName = element.getAttribute('name');
+                    const newName = `table-${this.tableId}-row-${newIndex}-col-${colIndex}`;
+                    
+                    if (oldName !== newName) {
+                        // Move the stored value to the new key
+                        try {
+                            const storedValue = localStorage.getItem(oldName);
+                            if (storedValue !== null) {
+                                localStorage.setItem(newName, storedValue);
+                                localStorage.removeItem(oldName);
+                            }
+                        } catch (error) {
+                            console.warn('Failed to reindex localStorage:', error);
+                        }
+                        
+                        // Update the element's name attribute
+                        element.setAttribute('name', newName);
+                    }
+                });
+            });
+        });
     }
 }
