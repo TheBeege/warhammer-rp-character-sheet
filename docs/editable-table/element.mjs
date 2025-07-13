@@ -92,7 +92,12 @@ export class EditableTable extends HTMLElement {
                 
                 if (templateElement) {
                     // Clone the template element
-                    const input = templateElement.cloneNode(true);
+                    let input = templateElement.cloneNode(true);
+                    
+                    // Convert table-editable-text elements to input elements
+                    if (templateElement.classList.contains('table-editable-text')) {
+                        input = this.convertToTextInput(templateElement);
+                    }
                     
                     // Generate unique name for persistence
                     const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
@@ -107,6 +112,14 @@ export class EditableTable extends HTMLElement {
                 }
             }
         });
+    }
+
+    convertToTextInput(templateElement) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = templateElement.className;
+        input.placeholder = templateElement.textContent || '';
+        return input;
     }
 
     setFieldName(element, baseName) {
@@ -137,6 +150,12 @@ export class EditableTable extends HTMLElement {
             if (formEl.tagName.toLowerCase() === "select") {
                 formEl.addEventListener("change", this.persistFormInput);
             } else if (formEl.tagName.toLowerCase() === "input") {
+                if (formEl.type === "checkbox" || formEl.type === "radio") {
+                    formEl.addEventListener("change", this.persistFormInput);
+                } else {
+                    formEl.addEventListener("focusout", this.persistFormInput);
+                }
+            } else if (formEl.tagName.toLowerCase() === "textarea") {
                 formEl.addEventListener("focusout", this.persistFormInput);
             }
         });
@@ -153,7 +172,12 @@ export class EditableTable extends HTMLElement {
         // Clone each template record element from the light DOM
         this.templateRecordElements.forEach((templateElement, colIndex) => {
             const cell = document.createElement("td");
-            const clonedContent = templateElement.cloneNode(true);
+            let clonedContent = templateElement.cloneNode(true);
+            
+            // Convert table-editable-text elements to input elements
+            if (templateElement.classList.contains('table-editable-text')) {
+                clonedContent = this.convertToTextInput(templateElement);
+            }
             
             // Generate unique name for persistence
             const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
@@ -219,15 +243,32 @@ export class EditableTable extends HTMLElement {
     // Persistence methods (similar to main.mjs)
     persistFormInput(event) {
         const fieldName = event.target.getAttribute("name");
-        const fieldValue = event.target.value;
-        localStorage.setItem(fieldName, fieldValue);
+        let fieldValue;
+        
+        if (event.target.type === "checkbox") {
+            fieldValue = event.target.checked.toString();
+        } else if (event.target.type === "radio") {
+            fieldValue = event.target.checked ? event.target.value : null;
+        } else {
+            fieldValue = event.target.value;
+        }
+        
+        if (fieldValue !== null) {
+            localStorage.setItem(fieldName, fieldValue);
+        }
     }
 
     fillFieldFromStorage(field) {
         const fieldName = field.getAttribute("name");
         const fieldValue = localStorage.getItem(fieldName);
         if (fieldValue !== null) {
-            field.value = fieldValue;
+            if (field.tagName.toLowerCase() === "input" && field.type === "checkbox") {
+                field.checked = fieldValue === "true";
+            } else if (field.tagName.toLowerCase() === "input" && field.type === "radio") {
+                field.checked = fieldValue === field.value;
+            } else {
+                field.value = fieldValue;
+            }
         }
     }
 
