@@ -91,19 +91,37 @@ export class EditableTable extends HTMLElement {
                 const templateElement = this.templateRecordElements[templateElementIndex];
                 
                 if (templateElement) {
-                    // Clone the template element
-                    const input = templateElement.cloneNode(true);
-                    
-                    // Generate unique name for persistence
-                    const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
-                    this.setFieldName(input, fieldName);
-                    
-                    // Clear the cell and add the input
-                    cell.innerHTML = '';
-                    cell.appendChild(input);
-                    
-                    // Set up persistence
-                    this.setupPersistence(input);
+                    // Check if this is marked as editable text
+                    if (templateElement.classList.contains('table-editable-text')) {
+                        // Create an input element instead of cloning the template
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        
+                        // Generate unique name for persistence
+                        const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
+                        input.setAttribute('name', fieldName);
+                        
+                        // Clear the cell and add the input
+                        cell.innerHTML = '';
+                        cell.appendChild(input);
+                        
+                        // Set up persistence
+                        this.setupPersistence(input);
+                    } else {
+                        // Clone the template element for other types (select, etc.)
+                        const input = templateElement.cloneNode(true);
+                        
+                        // Generate unique name for persistence
+                        const fieldName = `table-${this.tableId}-row-${rowIndex}-col-${colIndex}`;
+                        this.setFieldName(input, fieldName);
+                        
+                        // Clear the cell and add the input
+                        cell.innerHTML = '';
+                        cell.appendChild(input);
+                        
+                        // Set up persistence
+                        this.setupPersistence(input);
+                    }
                 }
             }
         });
@@ -153,20 +171,39 @@ export class EditableTable extends HTMLElement {
         // Clone each template record element from the light DOM
         this.templateRecordElements.forEach((templateElement, colIndex) => {
             const cell = document.createElement("td");
-            const clonedContent = templateElement.cloneNode(true);
             
-            // Generate unique name for persistence
-            const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
-            this.setFieldName(clonedContent, fieldName);
+            // Check if this is marked as editable text
+            if (templateElement.classList.contains('table-editable-text')) {
+                // Create an input element instead of cloning the template
+                const input = document.createElement('input');
+                input.type = 'text';
+                
+                // Generate unique name for persistence
+                const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
+                input.setAttribute('name', fieldName);
+                
+                cell.appendChild(input);
+                
+                // Set up persistence for this cell
+                this.setupPersistence(input);
+            } else {
+                // Clone the template element for other types (select, etc.)
+                const clonedContent = templateElement.cloneNode(true);
+                
+                // Generate unique name for persistence
+                const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
+                this.setFieldName(clonedContent, fieldName);
+                
+                // Clear any form values
+                this.clearFormElement(clonedContent);
+                
+                cell.appendChild(clonedContent);
+                
+                // Set up persistence for this cell
+                this.setupPersistence(clonedContent);
+            }
             
-            // Clear any form values
-            this.clearFormElement(clonedContent);
-            
-            cell.appendChild(clonedContent);
             newRow.appendChild(cell);
-            
-            // Set up persistence for this cell
-            this.setupPersistence(clonedContent);
         });
         
         // Add delete button
