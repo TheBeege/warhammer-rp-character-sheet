@@ -177,7 +177,7 @@ export class EditableTable extends HTMLElement {
         });
     }
 
-    addListItem(event) {
+    addListItem(event, loadFromStorage = false) {
         event.preventDefault();
         
         this.rowCounter++;
@@ -197,8 +197,10 @@ export class EditableTable extends HTMLElement {
             const fieldName = `table-${this.tableId}-row-${this.rowCounter}-col-${colIndex}`;
             this.setFieldName(editableContent, fieldName);
             
-            // Clear any form values
-            this.clearFormElement(editableContent);
+            // Only clear form values if not loading from storage
+            if (!loadFromStorage) {
+                this.clearFormElement(editableContent);
+            }
             
             cell.appendChild(editableContent);
             newRow.appendChild(cell);
@@ -324,7 +326,7 @@ export class EditableTable extends HTMLElement {
                 const rowCount = parseInt(storedRowCount);
                 // We start with 1 row (the template), so add the remaining rows
                 for (let i = 1; i < rowCount; i++) {
-                    this.addListItem(new Event('click'));
+                    this.addListItem(new Event('click'), true);
                 }
             }
         } catch (error) {
