@@ -1,4 +1,6 @@
 <script>
+  import Select, { Option } from '@smui/select';
+  import Textfield from '@smui/textfield';
   import {
     characterName,
     characterSpecies,
@@ -36,53 +38,91 @@
       <fieldset>
         <legend>Basic Attributes</legend>
         <div class="field">
-          <label for="name">Name</label>
-          <input type="text" id="name" name="character_name" bind:value={$characterName} />
+          <Textfield 
+            type="text"
+            id="name"
+            name="character_name"
+            label="Name"
+            bind:value={$characterName}
+          />
         </div>
         <div class="field">
-          <label for="species">Species</label>
-          <input type="text" id="species" name="character_species" bind:value={$characterSpecies} />
+          <Select bind:value={$characterSpecies} label="Species" id="species" name="character_species">
+            <Option value="human">Human</Option>
+            <Option value="dwarf">Dwarf</Option>
+            <Option value="elf">Elf</Option>
+            <Option value="halfling">Halfling</Option>
+          </Select>
         </div>
         <div class="field">
-          <label for="gender">Gender</label>
-          <select id="gender" name="character_gender" bind:value={$characterGender}>
-            <option value="">Choose...</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
+          <Select bind:value={$characterGender} label="Gender" id="gender" name="character_gender">
+            <Option value="male">Male</Option>
+            <Option value="female">Female</Option>
+            <Option value="other">Other</Option>
+          </Select>
         </div>
       </fieldset>
       <fieldset>
         <legend>Physical Attributes</legend>
         <div class="field">
-          <label for="age">Age</label>
-          <input type="number" id="age" name="character_age" bind:value={$characterAge} />
+          <Textfield 
+            type="number"
+            id="age"
+            name="character_age"
+            label="Age"
+            bind:value={$characterAge}
+          />
         </div>
         <div class="field">
-          <label for="height">Height</label>
-          <input type="text" id="height" name="character_height" bind:value={$characterHeight} />
+          <Textfield 
+            type="number"
+            id="height"
+            name="character_height"
+            label="Height"
+            suffix="cm"
+            bind:value={$characterHeight}
+          />
           <!-- TODO: height string constraints -->
           <!-- TODO: switch between imperial and metric -->
         </div>
         <div class="field">
-          <label for="hair">Hair</label>
-          <input type="text" id="hair" name="character_hair" bind:value={$characterHair} />
+          <Textfield 
+            type="text"
+            id="hair"
+            name="character_hair"
+            label="Hair"
+            bind:value={$characterHair}
+          />
         </div>
         <div class="field">
-          <label for="eyes">Eyes</label>
-          <input type="text" id="eyes" name="character_eyes" bind:value={$characterEyes} />
+          <Textfield 
+            type="text"
+            id="eyes"
+            name="character_eyes"
+            label="Eyes"
+            bind:value={$characterEyes}
+          />
         </div>
       </fieldset>
       <fieldset>
         <legend>Origins</legend>
         <div class="field">
-          <label for="birthday">Birthday</label>
-          <input type="text" id="birthday" name="character_birthday" bind:value={$characterBirthday} />
+          <Textfield 
+            type="text"
+            id="birthday"
+            name="character_birthday"
+            label="Birthday"
+            bind:value={$characterBirthday}
+          />
         </div>
         <div class="field">
-          <label for="birthplace">Nationality/Birthplace</label>
-          <input type="text" id="birthplace" name="character_birthplace" bind:value={$characterBirthplace} />
+          <Textfield 
+            type="text"
+            id="birthplace"
+            name="character_birthplace"
+            label="Nationality/Birthplace"
+            bind:value={$characterBirthplace}
+          />
         </div>
       </fieldset>
     </form>
@@ -94,31 +134,56 @@
       <fieldset>
         <legend>Drivers</legend>
         <div class="field">
-          <label for="religion">Religion/Deity</label>
-          <input type="text" id="religion" name="psyche_religion" bind:value={$psycheReligion} />
+          <Textfield 
+            type="text"
+            id="religion"
+            name="psyche_religion"
+            label="Religion/Deity"
+            bind:value={$psycheReligion}
+          />
         </div>
         <div class="field">
-          <label for="motivation">Motivation (Resilience)</label>
-          <input type="text" id="motivation" name="psyche_motivation" bind:value={$psycheMotivation} />
+          <Textfield 
+            type="text"
+            id="motivation"
+            name="psyche_motivation"
+            label="Motivation (Resilience)"
+            bind:value={$psycheMotivation}
+          />
         </div>
       </fieldset>
       <fieldset>
         <legend>Psychology</legend>
         <div class="field">
-          <label for="psychology">Psychology</label>
-          <input type="text" id="psychology" name="psyche_psychology" bind:value={$psychePsychology} />
+          <Textfield 
+            type="text"
+            id="psychology"
+            name="psyche_psychology"
+            label="Psychology"
+            bind:value={$psychePsychology}
+          />
         </div>
         <!-- TODO: Allow many inputs -->
       </fieldset>
       <fieldset>
         <legend>Ambitions</legend>
         <div class="field">
-          <label for="short-ambition">Short-Term Ambition</label>
-          <input type="text" id="short-ambition" name="psyche_short-ambition" bind:value={$psycheShortAmbition} />
+          <Textfield 
+            textarea
+            id="short-ambition"
+            name="psyche_short-ambition"
+            label="Short-Term Ambition"
+            bind:value={$psycheShortAmbition}
+          />
         </div>
         <div class="field">
-          <label for="long-ambition">Long-Term Ambition</label>
-          <input type="text" id="long-ambition" name="psyche_long-ambition" bind:value={$psycheLongAmbition} />
+          <Textfield 
+            textarea
+            id="long-ambition"
+            name="psyche_long-ambition"
+            label="Long-Term Ambition"
+            bind:value={$psycheLongAmbition}
+          />
         </div>
       </fieldset>
     </form>
@@ -132,36 +197,37 @@
       <fieldset>
         <legend>Career</legend>
         <div class="field">
-          <label for="class">Class</label>
-          <select id="class" name="career_class" bind:value={$careerClass}>
-            <option value="">Choose...</option>
-            <option value="academic">Academic</option>
-            <option value="burgher">Burgher</option>
-            <option value="courtier">Courtier</option>
-            <option value="peasant">Peasant</option>
-            <option value="ranger">Ranger</option>
-            <option value="riverfolk">Riverfolk</option>
-            <option value="rogue">Rogue</option>
-            <option value="warrior">Warrior</option>
-          </select>
+          <Select label="Class" id="class" name="career_class" bind:value={$careerClass}>
+            <Option value="academic">Academic</Option>
+            <Option value="burgher">Burgher</Option>
+            <Option value="courtier">Courtier</Option>
+            <Option value="peasant">Peasant</Option>
+            <Option value="ranger">Ranger</Option>
+            <Option value="riverfolk">Riverfolk</Option>
+            <Option value="rogue">Rogue</Option>
+            <Option value="warrior">Warrior</Option>
+          </Select>
         </div>
         <div class="field">
-          <label for="career">Career</label>
-          <select id="career" name="career_career" bind:value={$careerCareer}>
-            <option value="">Not yet, sorry</option>
+          <Select label="Career" id="career" name="career_career" bind:value={$careerCareer}>
+            <Option value="">Not yet, sorry</Option>
             <!-- TODO: this -->
-          </select>
+          </Select>
         </div>
         <div class="field">
-          <label for="tier">Career Tier/Level</label>
-          <select id="tier" name="career_tier" bind:value={$careerTier}>
-            <option value="">Not yet, sorry</option>
+          <Select label="Career Tier/Level" id="tier" name="career_tier" bind:value={$careerTier}>
+            <Option value="">Not yet, sorry</Option>
             <!-- TODO: this -->
-          </select>
+          </Select>
         </div>
         <div class="field">
-          <label for="status">Status</label>
-          <input type="text" id="status" name="career_status" bind:value={$careerStatus} />
+          <Textfield 
+            type="text"
+            id="status"
+            name="career_status"
+            label="Status"
+            bind:value={$careerStatus}
+          />
           <!-- TODO: find a better way to handle status -->
         </div>
       </fieldset>
@@ -174,12 +240,22 @@
       <fieldset>
         <legend>Basics</legend>
         <div class="field">
-          <label for="party-name">Name</label>
-          <input type="text" id="party-name" name="party_name" bind:value={$partyName}>
+          <Textfield 
+            type="text"
+            id="party-name"
+            name="party_name"
+            label="Name"
+            bind:value={$partyName}
+          />
         </div>
         <div class="field">
-          <label for="headquarters">Headquarters</label>
-          <input type="text" id="headquarters" name="party_headquarters" bind:value={$partyHeadquarters}>
+          <Textfield 
+            type="text"
+            id="headquarters"
+            name="party_headquarters"
+            label="Headquarters"
+            bind:value={$partyHeadquarters}
+          />
         </div>
       </fieldset>
       <fieldset>
@@ -189,12 +265,22 @@
       <fieldset>
         <legend>Ambitions</legend>
         <div class="field">
-          <label for="party-short-ambition">Short-Term Ambition</label>
-          <input type="text" id="party-short-ambition" name="party_short-ambition" bind:value={$partyShortAmbition} />
+          <Textfield 
+            textarea
+            id="party-short-ambition"
+            name="party_short-ambition"
+            label="Short-Term Ambition"
+            bind:value={$partyShortAmbition}
+          />
         </div>
         <div class="field">
-          <label for="party-long-ambition">Long-Term Ambition</label>
-          <input type="text" id="party-long-ambition" name="party_long-ambition" bind:value={$partyLongAmbition} />
+          <Textfield 
+            textarea
+            id="party-long-ambition"
+            name="party_long-ambition"
+            label="Long-Term Ambition"
+            bind:value={$partyLongAmbition}
+          />
         </div>
       </fieldset>
     </form>
@@ -208,16 +294,32 @@
       <fieldset>
         <legend>Experience</legend>
         <div class="field">
-          <label for="current">Current/Unspent</label>
-          <input type="number" id="current" name="experience_current" bind:value={$experienceCurrent} />
+          <Textfield 
+            type="number"
+            id="current"
+            name="experience_current"
+            label="Current/Unspent"
+            bind:value={$experienceCurrent}
+          />
         </div>
         <div class="field">
-          <label for="spent">Spent</label>
-          <input type="number" id="spent" name="experience_spent" bind:value={$experienceSpent} />
+          <Textfield 
+            type="number"
+            id="spent"
+            name="experience_spent"
+            label="Spent"
+            bind:value={$experienceSpent}
+          />
         </div>
         <div class="field">
-          <label for="total">Total</label>
-          <input disabled type="number" id="total" name="experience_total" value={$experienceTotal} />
+          <Textfield 
+            disabled
+            type="number"
+            id="total"
+            name="experience_total"
+            label="Total"
+            bind:value={$experienceTotal}
+          />
         </div>
       </fieldset>
     </form>
