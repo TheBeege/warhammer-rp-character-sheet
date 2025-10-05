@@ -50,6 +50,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@anthropic-ai/claude-code": "^1.0.0"
+    "@anthropic-ai/claude-code": "^1.0.0",
+    "vite-plugin-vercel": "^9.0.7"
   }
 }
