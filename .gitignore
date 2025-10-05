@@ -140,3 +140,8 @@ dist
 
 # Agent temporary files
 agents/temp/
+
+# SvelteKit
+.svelte-kit/
+.vercel/
+build/

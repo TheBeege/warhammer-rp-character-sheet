@@ -3,6 +3,11 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
+// Mock $app/environment to make browser = true in tests
+vi.mock('$app/environment', () => ({
+  browser: true
+}));
+
 let templateHTML, templateCSS;
 
 // Load template files once before all tests
