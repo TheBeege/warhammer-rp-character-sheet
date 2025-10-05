@@ -1,4 +1,5 @@
 import { EditableTable } from "./editable-table/element.mjs";
+import { persistFormInput, fillFieldFromStorage } from "./storage.js";
 
 /**
  * This is linked using the html `defer` attribute, so `onload` nonsense isn't necessary.
@@ -6,31 +7,8 @@ import { EditableTable } from "./editable-table/element.mjs";
 
 customElements.define("editable-table", EditableTable);
 
-/**
- * This reads data from the triggering form event and persists it to browser storage.
- * 
- * @param {Event} event
- */
-function persistFormInput(event) {
-    const fieldName = event.target.getAttribute("name");
-    const fieldValue = event.target.value;
-    localStorage.setItem(fieldName, fieldValue);
-}
-
-/**
- * This checks local storage for an existing value and populates that field if the 
- * corresponding value is found.
- * 
- * @param {(HTMLInputElement|HTMLSelectElement)} field 
- */
-function fillFieldFromStorage(field) {
-    const fieldName = field.getAttribute("name");
-    const fieldValue = localStorage.getItem(fieldName);
-    field.value = fieldValue;
-}
-
 // Fetch every field
-const allFields = document.querySelectorAll("input:not(:disabled):not([readonly]), " + 
+const allFields = document.querySelectorAll("input:not(:disabled):not([readonly]), " +
     "select:not(:disabled):not([readonly])");
 
 for (const field of allFields) {
