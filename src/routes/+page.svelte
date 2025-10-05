@@ -28,6 +28,7 @@
     experienceSpent,
     experienceTotal
   } from '$lib/stores/character.js';
+  import EditableListTable from '$lib/components/EditableListTable.svelte'
 </script>
 
 <div class="section-column">
@@ -260,7 +261,7 @@
       </fieldset>
       <fieldset>
         <legend>Members</legend>
-        <!-- TODO: this -->
+        <EditableListTable persistenceKeyPrefix="party_members" />
       </fieldset>
       <fieldset>
         <legend>Ambitions</legend>

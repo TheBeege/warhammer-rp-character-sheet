@@ -55,6 +55,8 @@ export const careerStatus = persistedStore('career_status');
 
 // Party stores
 export const partyName = persistedStore('party_name');
+// Party member list stored by EditableListTable component
+// See: src/lib/components/EditableListTable.svelte (localStorage key: 'party_members_items')
 export const partyHeadquarters = persistedStore('party_headquarters');
 export const partyShortAmbition = persistedStore('party_short-ambition');
 export const partyLongAmbition = persistedStore('party_long-ambition');
