@@ -322,6 +322,12 @@
       </Button>
     </div>
   </section>
+
+  <section>
+    <h2>Wounds</h2>
+    <hr>
+    <p>TODO: Wounds section</p>
+  </section>
 </div>
 
 <div class="section-column">
@@ -375,19 +381,13 @@
   </section>
 
   <section>
-    <h2>Wounds</h2>
-    <hr>
-    <p>TODO: Wounds section</p>
-  </section>
-</div>
-
-<div class="section-column">
-  <section>
     <h2>Injuries & Diseases</h2>
     <hr>
     <p>TODO: Injuries & Diseases section</p>
   </section>
+</div>
 
+<div class="section-column">
   <section>
     <h2>Corruption</h2>
     <hr>
