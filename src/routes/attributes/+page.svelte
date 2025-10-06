@@ -1,5 +1,6 @@
 <script>
   import Textfield from '@smui/textfield';
+  import Button from '@smui/button';
   import CharacteristicRow from '$lib/components/CharacteristicRow.svelte';
   import {
     // Weapon Skill
@@ -68,8 +69,18 @@
     movementEncumbrance,
     movementCurrent,
     movementWalk,
-    movementRun
+    movementRun,
+    // Fate & Resilience
+    fate,
+    fortune,
+    resilience,
+    resolve
   } from '$lib/stores/character.js';
+
+  function replenish() {
+    $fortune = $fate;
+    $resolve = $resilience;
+  }
 </script>
 
 <div class="section-column">
@@ -228,7 +239,47 @@
   <section>
     <h2>Fate & Resilience</h2>
     <hr>
-    <p>TODO: Fate & Resilience section</p>
+    <div class="fate-resilience-container">
+      <div class="fate-group">
+        <div class="pool-header">Fate</div>
+        <div class="pool-values">
+          <div class="pool-item">
+            <label for="fate">Fate</label>
+            <Textfield class="pool-input" type="number" id="fate" bind:value={$fate} />
+          </div>
+          <div class="pool-item">
+            <label for="fortune">Fortune</label>
+            <div class="current-max-wrapper">
+              <Textfield class="pool-input" type="number" id="fortune" bind:value={$fortune} />
+              <span class="max-indicator">/ {$fate}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fate-group">
+        <div class="pool-header">Resilience</div>
+        <div class="pool-values">
+          <div class="pool-item">
+            <label for="resilience">Resilience</label>
+            <Textfield class="pool-input" type="number" id="resilience" bind:value={$resilience} />
+          </div>
+          <div class="pool-item">
+            <label for="resolve">Resolve</label>
+            <div class="current-max-wrapper">
+              <Textfield class="pool-input" type="number" id="resolve" bind:value={$resolve} />
+              <span class="max-indicator">/ {$resilience}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="replenish-button-container">
+      <Button variant="raised" onclick={() => replenish()}>
+        Replenish Fortune & Resolve
+      </Button>
+    </div>
   </section>
 </div>
 
@@ -326,5 +377,68 @@
   .movement-derived {
     font-weight: 500;
     color: var(--mdc-theme-secondary, #03dac6);
+  }
+
+  /* Fate & Resilience section styles */
+  .fate-resilience-container {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .fate-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pool-header {
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-align: center;
+    padding-bottom: 0.25rem;
+    border-bottom: 2px solid var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38));
+  }
+
+  .pool-values {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pool-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .pool-item label {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .current-max-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .max-indicator {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--mdc-theme-text-secondary-on-background, #999);
+    white-space: nowrap;
+  }
+
+  .replenish-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  /* Pool input minimal width */
+  :global(.pool-input) {
+    width: 4rem;
   }
 </style>

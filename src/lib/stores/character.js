@@ -207,3 +207,9 @@ export const movementRun = derived(
 		return $current * 4;
 	}
 );
+
+// Fate & Resilience stores
+export const fate = persistedStore('fate', '0');
+export const fortune = persistedStore('fortune', '0');
+export const resilience = persistedStore('resilience', '0');
+export const resolve = persistedStore('resolve', '0');
