@@ -74,3 +74,104 @@ export const experienceTotal = derived(
 		return current + spent;
 	}
 );
+
+// Characteristics stores
+// Helper function to create a characteristic with calculated current value
+function createCharacteristic(name) {
+	const initial = persistedStore(`characteristic_${name}_initial`, '0');
+	const advances = persistedStore(`characteristic_${name}_advances`, '0');
+	const modifiers = persistedStore(`characteristic_${name}_modifiers`, '0');
+	const career = persistedStore(`characteristic_${name}_career`, '');
+
+	const current = derived(
+		[initial, advances, modifiers],
+		([$initial, $advances, $modifiers]) => {
+			const initialVal = parseInt($initial) || 0;
+			const advancesVal = parseInt($advances) || 0;
+			const modifiersVal = parseInt($modifiers) || 0;
+			return initialVal + advancesVal + modifiersVal;
+		}
+	);
+
+	return { initial, advances, modifiers, current, career };
+}
+
+// Weapon Skill
+const wsChar = createCharacteristic('ws');
+export const characteristicWSInitial = wsChar.initial;
+export const characteristicWSAdvances = wsChar.advances;
+export const characteristicWSModifiers = wsChar.modifiers;
+export const characteristicWSCurrent = wsChar.current;
+export const characteristicWSCareer = wsChar.career;
+
+// Ballistic Skill
+const bsChar = createCharacteristic('bs');
+export const characteristicBSInitial = bsChar.initial;
+export const characteristicBSAdvances = bsChar.advances;
+export const characteristicBSModifiers = bsChar.modifiers;
+export const characteristicBSCurrent = bsChar.current;
+export const characteristicBSCareer = bsChar.career;
+
+// Strength
+const sChar = createCharacteristic('s');
+export const characteristicSInitial = sChar.initial;
+export const characteristicSAdvances = sChar.advances;
+export const characteristicSModifiers = sChar.modifiers;
+export const characteristicSCurrent = sChar.current;
+export const characteristicSCareer = sChar.career;
+
+// Toughness
+const tChar = createCharacteristic('t');
+export const characteristicTInitial = tChar.initial;
+export const characteristicTAdvances = tChar.advances;
+export const characteristicTModifiers = tChar.modifiers;
+export const characteristicTCurrent = tChar.current;
+export const characteristicTCareer = tChar.career;
+
+// Initiative
+const iChar = createCharacteristic('i');
+export const characteristicIInitial = iChar.initial;
+export const characteristicIAdvances = iChar.advances;
+export const characteristicIModifiers = iChar.modifiers;
+export const characteristicICurrent = iChar.current;
+export const characteristicICareer = iChar.career;
+
+// Agility
+const agChar = createCharacteristic('ag');
+export const characteristicAgInitial = agChar.initial;
+export const characteristicAgAdvances = agChar.advances;
+export const characteristicAgModifiers = agChar.modifiers;
+export const characteristicAgCurrent = agChar.current;
+export const characteristicAgCareer = agChar.career;
+
+// Dexterity
+const dexChar = createCharacteristic('dex');
+export const characteristicDexInitial = dexChar.initial;
+export const characteristicDexAdvances = dexChar.advances;
+export const characteristicDexModifiers = dexChar.modifiers;
+export const characteristicDexCurrent = dexChar.current;
+export const characteristicDexCareer = dexChar.career;
+
+// Intelligence
+const intChar = createCharacteristic('int');
+export const characteristicIntInitial = intChar.initial;
+export const characteristicIntAdvances = intChar.advances;
+export const characteristicIntModifiers = intChar.modifiers;
+export const characteristicIntCurrent = intChar.current;
+export const characteristicIntCareer = intChar.career;
+
+// Willpower
+const wpChar = createCharacteristic('wp');
+export const characteristicWPInitial = wpChar.initial;
+export const characteristicWPAdvances = wpChar.advances;
+export const characteristicWPModifiers = wpChar.modifiers;
+export const characteristicWPCurrent = wpChar.current;
+export const characteristicWPCareer = wpChar.career;
+
+// Fellowship
+const felChar = createCharacteristic('fel');
+export const characteristicFelInitial = felChar.initial;
+export const characteristicFelAdvances = felChar.advances;
+export const characteristicFelModifiers = felChar.modifiers;
+export const characteristicFelCurrent = felChar.current;
+export const characteristicFelCareer = felChar.career;
