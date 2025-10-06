@@ -338,6 +338,7 @@
   .movement-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 1rem;
   }
 
@@ -382,6 +383,7 @@
   /* Fate & Resilience section styles */
   .fate-resilience-container {
     display: flex;
+    justify-content: center;
     gap: 2rem;
     margin-bottom: 1rem;
   }
@@ -390,6 +392,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 0.5rem;
   }
 
