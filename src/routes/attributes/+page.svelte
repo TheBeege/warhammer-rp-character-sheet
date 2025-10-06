@@ -1,7 +1,9 @@
 <script>
   import Textfield from '@smui/textfield';
   import Button from '@smui/button';
+  import Select, { Option } from '@smui/select';
   import CharacteristicRow from '$lib/components/CharacteristicRow.svelte';
+  import { persistedStore } from '$lib/stores/character.js';
   import {
     // Weapon Skill
     characteristicWSInitial,
@@ -80,6 +82,45 @@
   function replenish() {
     $fortune = $fate;
     $resolve = $resilience;
+  }
+
+  // Conditions
+  const CONDITION_TYPES = [
+    'Ablaze',
+    'Bleeding',
+    'Blinded',
+    'Broken',
+    'Deafened',
+    'Entangled',
+    'Fatigued',
+    'Poisoned',
+    'Prone',
+    'Stunned',
+    'Surprised',
+    'Unconscious'
+  ];
+
+  const conditionsStore = persistedStore('conditions', '[]');
+
+  let conditions = (() => {
+    try {
+      return JSON.parse($conditionsStore);
+    } catch {
+      return [];
+    }
+  })();
+
+  // Persist conditions changes to store
+  $: if (conditions.length >= 0) {
+    conditionsStore.set(JSON.stringify(conditions));
+  }
+
+  function addCondition() {
+    conditions = [...conditions, { id: Date.now(), type: 'Ablaze', count: 1, notes: '' }];
+  }
+
+  function deleteCondition(id) {
+    conditions = conditions.filter(c => c.id !== id);
   }
 </script>
 
@@ -287,7 +328,50 @@
   <section>
     <h2>Conditions</h2>
     <hr>
-    <p>TODO: Conditions section</p>
+    <table class="conditions-table">
+      <thead>
+        <tr>
+          <th>Condition</th>
+          <th>Count</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each conditions as condition (condition.id)}
+          <tr>
+            <td>
+              <Select bind:value={condition.type}>
+                {#each CONDITION_TYPES as conditionType}
+                  <Option value={conditionType}>{conditionType}</Option>
+                {/each}
+              </Select>
+            </td>
+            <td>
+              <Textfield
+                type="number"
+                bind:value={condition.count}
+                class="condition-count"
+              />
+            </td>
+            <td>
+              <Textfield
+                bind:value={condition.notes}
+                class="condition-notes"
+              />
+            </td>
+            <td class="delete-cell">
+              <Button onclick={() => deleteCondition(condition.id)}>❌</Button>
+            </td>
+          </tr>
+        {/each}
+        <tr>
+          <td colspan="4">
+            <Button onclick={addCondition}>+ Add Condition</Button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 
   <section>
@@ -443,5 +527,44 @@
   /* Pool input minimal width */
   :global(.pool-input) {
     width: 4rem;
+  }
+
+  /* Conditions section styles */
+  .conditions-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  .conditions-table th {
+    font-weight: bold;
+    padding: 0.5rem;
+    text-align: center;
+    border-bottom: 2px solid var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38));
+  }
+
+  .conditions-table th:first-child {
+    text-align: left;
+  }
+
+  .conditions-table td {
+    padding: 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.12));
+  }
+
+  .conditions-table td:first-child {
+    text-align: left;
+  }
+
+  .delete-cell {
+    width: 3rem;
+  }
+
+  :global(.condition-count) {
+    width: 4rem;
+  }
+
+  :global(.condition-notes) {
+    width: 100%;
   }
 </style>
