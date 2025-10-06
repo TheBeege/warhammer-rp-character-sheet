@@ -1,4 +1,5 @@
 <script>
+  import Textfield from '@smui/textfield';
   import CharacteristicRow from '$lib/components/CharacteristicRow.svelte';
   import {
     // Weapon Skill
@@ -60,7 +61,14 @@
     characteristicFelAdvances,
     characteristicFelModifiers,
     characteristicFelCurrent,
-    characteristicFelCareer
+    characteristicFelCareer,
+    // Movement
+    movementBase,
+    movementModifiers,
+    movementEncumbrance,
+    movementCurrent,
+    movementWalk,
+    movementRun
   } from '$lib/stores/character.js';
 </script>
 
@@ -173,11 +181,48 @@
       </tbody>
     </table>
   </section>
+</div>
 
+<div class="section-column">
   <section>
     <h2>Movement</h2>
     <hr>
-    <p>TODO: Movement section</p>
+    <div class="movement-container">
+      <table class="movement-table">
+        <thead>
+          <tr>
+            <th>Base</th>
+            <th>Modifiers</th>
+            <th>Enc</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <Textfield type="number" bind:value={$movementBase} />
+            </td>
+            <td class="movement-readonly">{$movementModifiers}</td>
+            <td class="movement-readonly">{$movementEncumbrance}</td>
+          </tr>
+        </tbody>
+      </table>
+      <table class="movement-table movement-derived-table">
+        <thead>
+          <tr>
+            <th>Movement</th>
+            <th>Walk</th>
+            <th>Run</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="movement-current">{$movementCurrent}</td>
+            <td class="movement-derived">{$movementWalk} yards</td>
+            <td class="movement-derived">{$movementRun} yards</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section>
@@ -230,5 +275,56 @@
 
   .characteristics-table th:first-child {
     text-align: left;
+  }
+
+  .characteristics-table td {
+    padding: 0.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.12));
+  }
+
+  /* Movement section styles */
+  .movement-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .movement-table {
+    border-collapse: collapse;
+    width: fit-content;
+  }
+
+  .movement-table th {
+    font-weight: bold;
+    padding: 0.5rem;
+    text-align: center;
+    border-bottom: 2px solid var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38));
+    white-space: nowrap;
+  }
+
+  .movement-table td {
+    padding: 0.5rem;
+    text-align: center;
+    width: 5rem;
+  }
+
+  .movement-derived-table {
+    margin-top: 0.5rem;
+  }
+
+  .movement-readonly {
+    color: var(--mdc-theme-text-secondary-on-background, #999);
+  }
+
+  .movement-current {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--mdc-theme-primary, #6200ee);
+  }
+
+  .movement-derived {
+    font-weight: 500;
+    color: var(--mdc-theme-secondary, #03dac6);
   }
 </style>

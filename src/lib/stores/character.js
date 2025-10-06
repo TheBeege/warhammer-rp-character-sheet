@@ -175,3 +175,35 @@ export const characteristicFelAdvances = felChar.advances;
 export const characteristicFelModifiers = felChar.modifiers;
 export const characteristicFelCurrent = felChar.current;
 export const characteristicFelCareer = felChar.career;
+
+// Movement stores
+export const movementBase = persistedStore('movement_base', '0');
+export const movementModifiers = persistedStore('movement_modifiers', '0');
+export const movementEncumbrance = persistedStore('movement_encumbrance', '0');
+
+// Calculated movement value (Base + Modifiers + Encumbrance)
+export const movementCurrent = derived(
+	[movementBase, movementModifiers, movementEncumbrance],
+	([$base, $modifiers, $encumbrance]) => {
+		const baseVal = parseInt($base) || 0;
+		const modifiersVal = parseInt($modifiers) || 0;
+		const encumbranceVal = parseInt($encumbrance) || 0;
+		return baseVal + modifiersVal + encumbranceVal;
+	}
+);
+
+// Walk: Movement * 2
+export const movementWalk = derived(
+	[movementCurrent],
+	([$current]) => {
+		return $current * 2;
+	}
+);
+
+// Run: Movement * 4
+export const movementRun = derived(
+	[movementCurrent],
+	([$current]) => {
+		return $current * 4;
+	}
+);
