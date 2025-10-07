@@ -3,6 +3,7 @@
   import Button from '@smui/button';
   import Select, { Option } from '@smui/select';
   import CharacteristicRow from '$lib/components/CharacteristicRow.svelte';
+  import EditableListTable from '$lib/components/EditableListTable.svelte';
   import { persistedStore, characterSpecies } from '$lib/stores/character.js';
   import { derived } from 'svelte/store';
   import {
@@ -436,7 +437,7 @@
   <section>
     <h2>Injuries & Diseases</h2>
     <hr>
-    <p>TODO: Injuries & Diseases section</p>
+    <EditableListTable persistenceKeyPrefix="injuries_diseases" />
   </section>
 </div>
 
