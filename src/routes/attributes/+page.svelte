@@ -3,7 +3,8 @@
   import Button from '@smui/button';
   import Select, { Option } from '@smui/select';
   import CharacteristicRow from '$lib/components/CharacteristicRow.svelte';
-  import { persistedStore } from '$lib/stores/character.js';
+  import { persistedStore, characterSpecies } from '$lib/stores/character.js';
+  import { derived } from 'svelte/store';
   import {
     // Weapon Skill
     characteristicWSInitial,
@@ -81,7 +82,6 @@
 
   function replenish() {
     $fortune = $fate;
-    $resolve = $resilience;
   }
 
   // Conditions
@@ -122,6 +122,26 @@
   function deleteCondition(id) {
     conditions = conditions.filter(c => c.id !== id);
   }
+
+  // Wounds
+  const wounds = persistedStore('wounds', '0');
+  const hardy = persistedStore('hardy', '0');
+  const criticalWounds = persistedStore('critical_wounds', '0');
+
+  const maxWounds = derived(
+    [characteristicSCurrent, characteristicTCurrent, characteristicWPCurrent, characterSpecies],
+    ([$s, $t, $wp, $species]) => {
+      const sTens = Math.floor((parseInt($s) || 0) / 10);
+      const tTens = Math.floor((parseInt($t) || 0) / 10);
+      const wpTens = Math.floor((parseInt($wp) || 0) / 10);
+
+      // If Halfling, exclude Strength tens digit
+      const isHalfling = $species?.toLowerCase() === 'halfling';
+      const strengthComponent = isHalfling ? 0 : sTens;
+
+      return strengthComponent + (tTens * 2) + wpTens;
+    }
+  );
 </script>
 
 <div class="section-column">
@@ -296,6 +316,11 @@
             </div>
           </div>
         </div>
+        <div class="replenish-button-container">
+          <Button variant="raised" onclick={() => replenish()}>
+            Replenish Fortune
+          </Button>
+        </div>
       </div>
 
       <div class="fate-group">
@@ -315,18 +340,46 @@
         </div>
       </div>
     </div>
-
-    <div class="replenish-button-container">
-      <Button variant="raised" onclick={() => replenish()}>
-        Replenish Fortune & Resolve
-      </Button>
-    </div>
   </section>
 
   <section>
     <h2>Wounds</h2>
     <hr>
-    <p>TODO: Wounds section</p>
+    <table class="wounds-table">
+      <thead>
+        <tr>
+          <th>Max Wounds</th>
+          <th>Hardy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="wounds-readonly">{$maxWounds}</td>
+          <td class="wounds-readonly">{$hardy}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="wounds-table wounds-current-table">
+      <thead>
+        <tr>
+          <th>Wounds</th>
+          <th>Critical Wounds</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="current-max-wrapper">
+              <Textfield type="number" bind:value={$wounds} class="wounds-input" />
+              <span class="max-indicator">/ {$maxWounds}</span>
+            </div>
+          </td>
+          <td>
+            <Textfield type="number" bind:value={$criticalWounds} class="wounds-input" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </div>
 
@@ -521,7 +574,7 @@
   .replenish-button-container {
     display: flex;
     justify-content: center;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
   }
 
   /* Pool input minimal width */
@@ -566,5 +619,37 @@
 
   :global(.condition-notes) {
     width: 100%;
+  }
+
+  /* Wounds section styles */
+  .wounds-table {
+    border-collapse: collapse;
+    width: fit-content;
+    margin: 0 auto;
+  }
+
+  .wounds-table th {
+    font-weight: bold;
+    padding: 0.5rem;
+    text-align: center;
+    border-bottom: 2px solid var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.38));
+  }
+
+  .wounds-table td {
+    padding: 0.5rem;
+    text-align: center;
+  }
+
+  .wounds-current-table {
+    margin-top: 0.5rem;
+  }
+
+  .wounds-readonly {
+    color: var(--mdc-theme-text-secondary-on-background, #999);
+    font-size: 1.1rem;
+  }
+
+  :global(.wounds-input) {
+    width: 5rem;
   }
 </style>

@@ -81,7 +81,7 @@ function createCharacteristic(name) {
 	const initial = persistedStore(`characteristic_${name}_initial`, '0');
 	const advances = persistedStore(`characteristic_${name}_advances`, '0');
 	const modifiers = persistedStore(`characteristic_${name}_modifiers`, '0');
-	const career = persistedStore(`characteristic_${name}_career`, '');
+	const career = persistedStore(`characteristic_${name}_career`, 'false');
 
 	const current = derived(
 		[initial, advances, modifiers],

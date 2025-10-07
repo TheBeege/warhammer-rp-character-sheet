@@ -10,13 +10,27 @@
   export let modifiersStore;
   export let currentStore;
   export let careerStore;
+
+  // Convert string store to boolean for checkbox
+  let careerChecked = $careerStore === 'true';
+
+  // Watch for store changes to update local state
+  $: careerChecked = $careerStore === 'true';
+
+  // Watch for local state changes to update store
+  $: {
+    const newValue = careerChecked ? 'true' : 'false';
+    if (newValue !== $careerStore) {
+      careerStore.set(newValue);
+    }
+  }
 </script>
 
 <tr>
   <td class="char-name">{name} ({abbreviation})</td>
   <td class="char-career">
     <FormField>
-      <Checkbox bind:checked={$careerStore} />
+      <Checkbox bind:checked={careerChecked} />
     </FormField>
   </td>
   <td class="char-value">
